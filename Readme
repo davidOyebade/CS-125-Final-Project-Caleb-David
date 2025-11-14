@@ -2,3 +2,50 @@ Readme
 By: Caleb Song and David Oyebade
 Team Name: Rush Hour
 For: CS-125 Database Design Prof. Mike Ryu
+
+Product requirements for Database Design final project
+Team Name: Rush Hour
+
+Who is using this?
+Pastors/Youth leaders
+
+What do they want to do?
+  Manage people
+    Keep track of students, parents/guardians, leaders, and volunteers
+      Parent-student relationship
+      leader/volunteer availability and scheduling
+  Manage small groups and determine who is in which group
+    Keep track of meetings and take notes
+  Store personal information for each person
+    Contact info
+    Prayer requests/updates 
+    Track attendance
+Manage events
+  Master calendar to organize upcoming and past events
+    See who is attending, who is working
+      Register students for events and record attendance
+  Take notes on events
+  Get live updates of who is there and who isn’t
+      Track sign-ins and sign-outs
+What should and shouldn’t they be able to do?
+  What they should be able to do
+    note-taking 
+      Look up notes from past events
+    Enter in notes for new events
+  Attendance information
+    View current and past attendance information
+  Student information
+    View student instances with relevant information
+      Parents
+      Address
+      Etc…
+
+
+What they shouldn't be able to do
+  Edit information of other people without being the admin/head pastor
+  Add contradictory information 
+    Future birthdate
+    Scheduling to be in two places at once
+  Invalid checkins
+    Check people in/out when an event is not in progress
+    Check in a person at two places at once.
