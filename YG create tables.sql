@@ -1,0 +1,50 @@
+-- Westmont College CS 125 Database Design Fall 2025
+-- Final Project
+-- Assistant Professor Mike Ryu
+-- Caleb Song & David Oyebade
+
+DROP DATABASE IF EXISTS FP_YG_app;
+CREATE DATABASE FP_YG_app;
+USE FP_YG_app;
+
+CREATE TABLE Person(
+    ID INT AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Address VARCHAR(100),
+    DateOfBirth CHAR(10),
+    PhoneNumber CHAR(12),
+    PRIMARY KEY(ID)
+);
+
+CREATE TABLE Student(
+    StudentID INT NOT NULL,
+    Grade INT,
+    FOREIGN KEY(StudentID) REFERENCES Person(ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Parent(
+    ParentID INT NOT NULL,
+    FOREIGN KEY(ParentID) REFERENCES Person(ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Volunteer(
+    VolunteerID INT NOT NULL,
+    FOREIGN KEY(VolunteerID) REFERENCES Person(ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Leader(
+    LeaderID INT NOT NULL,
+    Title VARCHAR(50),
+    FOREIGN KEY(LeaderID) REFERENCES Person(ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE StudentParent(
+    StudentID INT NOT NULL,
+    ParentID INT NOT NULL,
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID) ON DELETE CASCADE ON UPDATE CASCADE ,
+    FOREIGN KEY (ParentID) REFERENCES Parent(ParentID) ON DELETE CASCADE ON UPDATE CASCADE
+);
