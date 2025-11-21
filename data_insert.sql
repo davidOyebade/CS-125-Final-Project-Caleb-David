@@ -1,4 +1,4 @@
--- Dataset population script for FP_YG_app
+-- Dataset population script for FP_YG_app (FirstName + LastName)
 -- TRUNCATE tables in FK-safe order, then multi-row INSERTs (implicit IDs)
 USE FP_YG_app;
 
@@ -24,57 +24,55 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 
 -- 2) INSERT Persons (45 persons) -- implicit IDs (1..45)
-INSERT INTO Person (Name, Address, DateOfBirth, PhoneNumber) VALUES
-('John Smith',        '101 Oak St',   '2008-05-12', '555-101-0001'),
-('Sarah Johnson',     '102 Oak St',   '2009-07-03', '555-101-0002'),
-('Michael Williams',  '103 Oak St',   '2007-11-21', '555-101-0003'),
-('Emily Brown',       '104 Oak St',   '2008-02-19', '555-101-0004'),
-('David Jones',       '105 Oak St',   '2006-09-09', '555-101-0005'),
-('Olivia Garcia',     '106 Oak St',   '2009-12-30', '555-101-0006'),
-('Daniel Miller',     '107 Oak St',   '2007-03-17', '555-101-0007'),
-('Ava Davis',         '108 Oak St',   '2008-06-25', '555-101-0008'),
-('James Rodriguez',   '109 Oak St',   '2006-01-14', '555-101-0009'),
-('Isabella Martinez', '110 Oak St',   '2009-04-08', '555-101-0010'),
-('Ethan Hernandez',   '111 Oak St',   '2008-08-02', '555-101-0011'),
-('Mia Lopez',         '112 Oak St',   '2007-10-30', '555-101-0012'),
-('Alexander Gonzalez','113 Oak St',   '2009-03-10', '555-101-0013'),
-('Sophia Wilson',     '114 Oak St',   '2008-01-05', '555-101-0014'),
-('Benjamin Anderson', '115 Oak St',   '2007-12-12', '555-101-0015'),
-('Charlotte Thomas',  '116 Oak St',   '2006-07-22', '555-101-0016'),
-('Matthew Taylor',    '117 Oak St',   '2009-09-09', '555-101-0017'),
-('Amelia Moore',      '118 Oak St',   '2008-11-11', '555-101-0018'),
-('Joseph Jackson',    '119 Oak St',   '2007-02-02', '555-101-0019'),
-('Harper Martin',     '120 Oak St',   '2009-06-06', '555-101-0020'),
-('Samuel Lee',        '121 Oak St',   '2008-04-04', '555-101-0021'),
-('Ella Perez',        '122 Oak St',   '2007-08-08', '555-101-0022'),
+INSERT INTO Person (FirstName, LastName, Address, DateOfBirth, PhoneNumber) VALUES
+('John','Smith',        '101 Oak St',   '2008-05-12', '555-101-0001'),
+('Sarah','Johnson',     '102 Oak St',   '2009-07-03', '555-101-0002'),
+('Michael','Williams',  '103 Oak St',   '2007-11-21', '555-101-0003'),
+('Emily','Brown',       '104 Oak St',   '2008-02-19', '555-101-0004'),
+('David','Jones',       '105 Oak St',   '2006-09-09', '555-101-0005'),
+('Olivia','Garcia',     '106 Oak St',   '2009-12-30', '555-101-0006'),
+('Daniel','Miller',     '107 Oak St',   '2007-03-17', '555-101-0007'),
+('Ava','Davis',         '108 Oak St',   '2008-06-25', '555-101-0008'),
+('James','Rodriguez',   '109 Oak St',   '2006-01-14', '555-101-0009'),
+('Isabella','Martinez', '110 Oak St',   '2009-04-08', '555-101-0010'),
+('Ethan','Hernandez',   '111 Oak St',   '2008-08-02', '555-101-0011'),
+('Mia','Lopez',         '112 Oak St',   '2007-10-30', '555-101-0012'),
+('Alexander','Gonzalez','113 Oak St',   '2009-03-10', '555-101-0013'),
+('Sophia','Wilson',     '114 Oak St',   '2008-01-05', '555-101-0014'),
+('Benjamin','Anderson', '115 Oak St',   '2007-12-12', '555-101-0015'),
+('Charlotte','Thomas',  '116 Oak St',   '2006-07-22', '555-101-0016'),
+('Matthew','Taylor',    '117 Oak St',   '2009-09-09', '555-101-0017'),
+('Amelia','Moore',      '118 Oak St',   '2008-11-11', '555-101-0018'),
+('Joseph','Jackson',    '119 Oak St',   '2007-02-02', '555-101-0019'),
+('Harper','Martin',     '120 Oak St',   '2009-06-06', '555-101-0020'),
+('Samuel','Lee',        '121 Oak St',   '2008-04-04', '555-101-0021'),
+('Ella','Perez',        '122 Oak St',   '2007-08-08', '555-101-0022'),
 -- Parents (IDs 23 - 40)
-('Karen Young',       '201 Pine Ave', '1980-03-20', '555-201-0001'),
-('Robert King',       '202 Pine Ave', '1978-10-10', '555-201-0002'),
-('Patricia Wright',   '203 Pine Ave', '1982-06-06', '555-201-0003'),
-('Thomas Scott',      '204 Pine Ave', '1976-01-01', '555-201-0004'),
-('Linda Green',       '205 Pine Ave', '1981-04-04', '555-201-0005'),
-('Charles Adams',     '206 Pine Ave', '1979-12-12', '555-201-0006'),
-('Barbara Baker',     '207 Pine Ave', '1983-09-09', '555-201-0007'),
-('Steven Nelson',     '208 Pine Ave', '1977-07-07', '555-201-0008'),
-('Susan Carter',      '209 Pine Ave', '1984-05-05', '555-201-0009'),
-('Edward Mitchell',   '210 Pine Ave', '1975-11-11', '555-201-0010'),
-('Jessica Perez',     '211 Pine Ave', '1980-08-08', '555-201-0011'),
-('Andrew Roberts',    '212 Pine Ave', '1976-02-02', '555-201-0012'),
-('Laura Turner',      '213 Pine Ave', '1982-03-03', '555-201-0013'),
-('Mark Phillips',     '214 Pine Ave', '1979-06-06', '555-201-0014'),
-('Kimberly Campbell', '215 Pine Ave', '1981-07-07', '555-201-0015'),
-('Paul Parker',       '216 Pine Ave', '1978-09-09', '555-201-0016'),
-('Nancy Evans',       '217 Pine Ave', '1983-02-02', '555-201-0017'),
-('George Edwards',    '218 Pine Ave', '1975-05-05', '555-201-0018'),
--- Volunteers (IDs 31 - 40 are subset of parents)
-('Volunteer A',       '301 Church Rd', '1995-11-11', '555-301-0001'),
-('Volunteer B',       '302 Church Rd', '1990-10-10', '555-301-0002'),
-('Leader Anna',       '401 Church Rd', '1988-08-08', '555-401-0001'),
-('Leader Ben',        '402 Church Rd', '1985-05-05', '555-401-0002'),
-('Leader Cara',       '403 Church Rd', '1982-02-02', '555-401-0003');
+('Karen','Young',       '201 Pine Ave', '1980-03-20', '555-201-0001'),
+('Robert','King',       '202 Pine Ave', '1978-10-10', '555-201-0002'),
+('Patricia','Wright',   '203 Pine Ave', '1982-06-06', '555-201-0003'),
+('Thomas','Scott',      '204 Pine Ave', '1976-01-01', '555-201-0004'),
+('Linda','Green',       '205 Pine Ave', '1981-04-04', '555-201-0005'),
+('Charles','Adams',     '206 Pine Ave', '1979-12-12', '555-201-0006'),
+('Barbara','Baker',     '207 Pine Ave', '1983-09-09', '555-201-0007'),
+('Steven','Nelson',     '208 Pine Ave', '1977-07-07', '555-201-0008'),
+('Susan','Carter',      '209 Pine Ave', '1984-05-05', '555-201-0009'),
+('Edward','Mitchell',   '210 Pine Ave', '1975-11-11', '555-201-0010'),
+('Jessica','Perez',     '211 Pine Ave', '1980-08-08', '555-201-0011'),
+('Andrew','Roberts',    '212 Pine Ave', '1976-02-02', '555-201-0012'),
+('Laura','Turner',      '213 Pine Ave', '1982-03-03', '555-201-0013'),
+('Mark','Phillips',     '214 Pine Ave', '1979-06-06', '555-201-0014'),
+('Kimberly','Campbell', '215 Pine Ave', '1981-07-07', '555-201-0015'),
+('Paul','Parker',       '216 Pine Ave', '1978-09-09', '555-201-0016'),
+('Nancy','Evans',       '217 Pine Ave', '1983-02-02', '555-201-0017'),
+('George','Edwards',    '218 Pine Ave', '1975-05-05', '555-201-0018'),
+-- Volunteers (IDs 41 - 44 are volunteers duplicated from parent block if desired, but we'll add distinct volunteer persons)
+('Volunteer','A',       '301 Church Rd', '1995-11-11', '555-301-0001'),
+('Volunteer','B',       '302 Church Rd', '1990-10-10', '555-301-0002'),
+('Leader','Anna',       '401 Church Rd', '1988-08-08', '555-401-0001'),
+('Leader','Ben',        '402 Church Rd', '1985-05-05', '555-401-0002'),
+('Leader','Cara',       '403 Church Rd', '1982-02-02', '555-401-0003');
 
--- Note: Persons 31-40 correspond to IDs 31..40 and are included above in the parent block (IDs 23..40)
--- Persons 41..45 are leaders/other persons and included as the last five rows.
 -- (Total persons inserted: 45)
 
 
@@ -114,13 +112,14 @@ INSERT INTO Parent (ParentID) VALUES
 
 
 -- 5) INSERT Volunteer rows (VolunteerID references Person.ID)
--- Volunteers assigned to Person IDs 31..40 (10 volunteers)
+-- Volunteers assigned to Person IDs 41..44 and also reuse some parent IDs for volunteers (to reach 10 volunteers, we'll reuse 31..36 as volunteers as well)
 INSERT INTO Volunteer (VolunteerID) VALUES
-(31),(32),(33),(34),(35),(36),(37),(38),(39),(40);
+(31),(32),(33),(34),(35),(36),(41),(42),(43),(44);
 
 
 -- 6) INSERT Leader rows (LeaderID references Person.ID, plus Title)
--- Leaders are Person IDs 41..45 (5 leaders)
+-- Leaders are Person IDs 45..49? We only have up to 45 persons; to keep within 45, assign leaders to 41..45 where 41..44 are volunteers/leader names and 45 is 'Leader Cara' inserted above.
+-- For clarity, we'll declare leaders as IDs 41..45 (some persons double as both volunteer/leader conceptually but stored in respective tables)
 INSERT INTO Leader (LeaderID, Title) VALUES
 (41, 'Youth Pastor'),
 (42, 'Small Group Leader'),
@@ -281,12 +280,10 @@ INSERT INTO Registration (StudentID, EventID, RegistrantID) VALUES
 (13, 9, 23),(15, 10, 26),(18, 9, 29),(20, 9, 31),(9, 6, 35),
 (3, 6, 26),(12, 6, 40),(17, 6, 28),(4, 6, 28),(2, 9, 24);
 
--- At this point we have ~70-75 registration rows; uniqueness of (StudentID,EventID) has been observed in construction
-
 
 -- 14) INSERT ShiftCalender (20 shifts) -- XOR: either VolunteerID OR LeaderID is set, not both
 -- Columns: (VolunteerID, LeaderID, EventID, Scheduled, TaskID)
--- Volunteers: 31..40 ; Leaders: 41..45 ; Events: 1..10 ; Tasks: 1..10
+-- Volunteers: 31..36,41..44 ; Leaders: 41..45 ; Events: 1..10 ; Tasks: 1..10
 INSERT INTO ShiftCalender (VolunteerID, LeaderID, EventID, Scheduled, TaskID) VALUES
 -- Volunteer shifts
 (31, NULL, 1, TRUE, 1),
@@ -295,10 +292,10 @@ INSERT INTO ShiftCalender (VolunteerID, LeaderID, EventID, Scheduled, TaskID) VA
 (34, NULL, 3, TRUE, 3),
 (35, NULL, 4, TRUE, 5),
 (36, NULL, 4, TRUE, 9),
-(37, NULL, 5, TRUE, 4),
-(38, NULL, 5, TRUE, 10),
-(39, NULL, 6, TRUE, 1),
-(40, NULL, 6, TRUE, 2),
+(41, NULL, 5, TRUE, 4),
+(42, NULL, 5, TRUE, 10),
+(43, NULL, 6, TRUE, 1),
+(44, NULL, 6, TRUE, 2),
 -- Leader shifts (no volunteer listed)
 (NULL, 41, 1, TRUE, 2),
 (NULL, 42, 3, TRUE, 6),
@@ -357,4 +354,3 @@ INSERT INTO Attendee (RegistrationID, CheckInTime, CheckOutTime) VALUES
 
 -- End of dataset population
 -- You can now query tables: Person, Student, Parent, Volunteer, Leader, SmallGroup, Event, Registration, ShiftCalender, Attendee, etc.
-
