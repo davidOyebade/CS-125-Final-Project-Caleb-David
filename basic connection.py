@@ -2,7 +2,6 @@
 import mysql.connector
 from mysql.connector import errorcode
 
-# NOTE: Update with your database credentials
 DB_USER = "root"
 DB_PASSWORD = ""
 DB_HOST = "127.0.0.1"
