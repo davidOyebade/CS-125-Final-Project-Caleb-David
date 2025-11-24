@@ -6,7 +6,6 @@ from fastapi.responses import FileResponse
 import os
 
 # --- Database Configuration ---
-# NOTE: Update with your database credentials
 DB_USER = "root"
 DB_PASSWORD = ""
 DB_HOST = "127.0.0.1"
@@ -74,7 +73,7 @@ def get_all_people():
             cursor.close()
             cnx.close()
 
-@app.get("/[people/{person_id}", response_model=Person)
+@app.get("/people/{person_id}", response_model=Person)
 def get_person_by_id(person_id: int):
     """
     Retrieves a specific customer by their ID.
@@ -104,7 +103,7 @@ def get_all_events():
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT id, name FROM Event ORDER BY name;")
+        cursor.execute("SELECT id, Name FROM Event ORDER BY Name;")
         events = cursor.fetchall()
         return events
     except mysql.connector.Error as err:
@@ -122,7 +121,7 @@ def get_all_smallgroups():
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT id, name FROM smallGroup ORDER BY name;")
+        cursor.execute("SELECT id, Name FROM SmallGroup ORDER BY Name;")
         smallgroups = cursor.fetchall()
         return smallgroups
     except mysql.connector.Error as err:
@@ -148,5 +147,3 @@ if __name__ == "__main__":
     print("3. Open your browser and go to http://127.0.0.1:8000/docs for the API documentation.")
     print("4. Open your browser and go to http://127.0.0.1:8000/demo for a UI demo.")
 
-    # This part is for demonstration purposes and will not be executed when running with uvicorn
-    # uvicorn.run("demo3_fastapi_app:app", host="127.0.0.1", port=8000, reload=True)
