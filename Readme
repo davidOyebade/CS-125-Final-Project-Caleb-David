@@ -49,3 +49,28 @@ What they shouldn't be able to do
   Invalid checkins
     Check people in/out when an event is not in progress
     Check in a person at two places at once.
+
+Implementing the API:
+  Required Software:
+  1. MySQL 9.5
+  2. Python 3.10
+  Use the 'sudo service start mysql' command to start MySQL on Ubuntu
+
+  Creating your database:
+  1.Run both the yg_create_tables.sql and yg_data_insert.sql files in order.
+  2.Add the FP_YG_app database to MySQL using the following commands in Ubuntu:
+    1.mysql -u root -p FP_YG_app  < yg_create_tables.sql
+    2.mysql -u root -p FP_YG_app < yg_data_insert.sql
+
+  Running the API
+  1.Run the following installs for (pydantic, fastapi, uvicorn, mysql-connector-python) using the command:
+  pip install <name>
+  2.Update the database configurations to match your system in the api_implement.py file.
+  3.Run the api_implement.py program to check for a successful connection.
+  4.Run the 'uvicorn demo3_fastapi_app:app --reload --port 8000' command to create your API.
+  5.Use the link http://127.0.0.1:8000/ to access the API.
+  6.Use the endpoints to execute queries! See the InsomniaSS.png for an example.
+
+
+IMPORTANT NOTES: ALL DATA IS GENERATED AND NOT REAL. ALL PASSWORDS IN THE REPOSITORY ARE OUT OF DATE AND NO LONGER VALID.
+
