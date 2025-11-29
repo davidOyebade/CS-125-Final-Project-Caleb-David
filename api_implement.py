@@ -86,7 +86,7 @@ def get_person_by_id(person_id: int):
         cursor.execute(query, (person_id,))
         person = cursor.fetchone()
         if not person:
-            raise HTTPException(status_code=404, detail="Customer not found")
+            raise HTTPException(status_code=404, detail="Person not found")
         return person
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
@@ -113,6 +113,26 @@ def get_all_events():
             cursor.close()
             cnx.close()
 
+@app.get("/events/{event_id}", response_model=Event)
+def get_event_by_id(event_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        # Use parameterized query to prevent SQL injection
+        query = "SELECT id, Name FROM Event WHERE id = %s;"
+        cursor.execute(query, (event_id,))
+        event = cursor.fetchone()
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        return event
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
+
 @app.get("/smallgroups", response_model=list[SmallGroup])
 def get_all_smallgroups():
     """
@@ -124,6 +144,25 @@ def get_all_smallgroups():
         cursor.execute("SELECT id, Name FROM SmallGroup ORDER BY Name;")
         smallgroups = cursor.fetchall()
         return smallgroups
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
+@app.get("/smallgroups/{smallgroup_id}", response_model=SmallGroup)
+def get_smallgroup_by_id(smallgroup_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        # Use parameterized query to prevent SQL injection
+        query = "SELECT id, Name FROM SmallGroup WHERE id = %s;"
+        cursor.execute(query, (smallgroup_id,))
+        smallgroup = cursor.fetchone()
+        if not smallgroup:
+            raise HTTPException(status_code=404, detail="smallgroup not found")
+        return smallgroup
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
     finally:
