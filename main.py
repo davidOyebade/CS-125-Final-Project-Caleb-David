@@ -1,3 +1,7 @@
+#Westmont College CS 125 Database Design Fall 2025
+# Final Project
+# Assistant Professor Mike Ryu
+# Caleb Song & David Oyebade
 
 import mysql.connector
 from fastapi import FastAPI, HTTPException
@@ -46,6 +50,11 @@ class Event(BaseModel):
 class SmallGroup(BaseModel):
     id: int
     Name: str
+class Student(BaseModel):
+    id: int
+    FirstName: str
+    LastName: str
+    Grade: int
 
 # --- API Endpoints ---
 @app.get("/")
@@ -94,6 +103,67 @@ def get_person_by_id(person_id: int):
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
+
+@app.get("/students", response_model=list[Student])
+def get_all_students():
+    """
+    Retrieves a list of all students
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("SELECT id, FirstName, LastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id ORDER BY lastName, firstName;")
+        students = cursor.fetchall()
+        return students
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+@app.get("/students/{student_grade}", response_model=list[Student])
+def get_students_by_grade(student_grade: int):
+    """
+    Retrieve students by grade
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        # Use parameterized query to prevent SQL injection
+        query = "SELECT id, FirstName, LastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id WHERE Grade = %s ORDER BY lastName, firstName;"
+        cursor.execute(query, (student_grade,))
+        students = cursor.fetchall()
+        if not students:
+            raise HTTPException(status_code=404, detail="Grade not found")
+        return students
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+@app.get("/student/{student_id}", response_model=Student)
+def get_student_by_id(student_id: int):
+    """
+    Retrieves a specific student by their ID.
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        # Use parameterized query to prevent SQL injection
+        query = "SELECT id, firstName, lastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id WHERE id = %s;"
+        cursor.execute(query, (student_id,))
+        student = cursor.fetchone()
+        if not student:
+            raise HTTPException(status_code=404, detail="Student not found")
+        return student
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
 
 @app.get("/events", response_model=list[Event])
 def get_all_events():
