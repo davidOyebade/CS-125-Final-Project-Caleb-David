@@ -9,6 +9,9 @@ from pydantic import BaseModel
 from fastapi.responses import FileResponse
 import os
 
+from mongodb_implement import get_mongo_client, get_mongo_db
+from redis_implement import get_redis_client, get_redis_conn
+
 # --- Database Configuration ---
 DB_USER = "root"
 DB_PASSWORD = ""
@@ -29,6 +32,8 @@ try:
 except mysql.connector.Error as err:
     print(f"Error creating connection pool: {err}")
     exit()
+get_mongo_client()
+get_redis_client()
 
 # --- FastAPI App ---
 app = FastAPI(
