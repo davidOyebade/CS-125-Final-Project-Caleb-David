@@ -1,3 +1,8 @@
+-- Westmont College CS 125 Database Design Fall 2025
+-- Final Project
+-- Assistant Professor Mike Ryu
+-- Caleb Song & David Oyebade
+
 -- Dataset population script for FP_YG_app (FirstName + LastName)
 -- TRUNCATE tables in FK-safe order, then multi-row INSERTs (implicit IDs)
 USE FP_YG_app;

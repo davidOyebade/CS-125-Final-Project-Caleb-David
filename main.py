@@ -112,7 +112,7 @@ def get_all_students():
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT id, FirstName, LastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id ORDER BY lastName, firstName;")
+        cursor.execute("SELECT id, firstName, lastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id ORDER BY lastName, firstName;")
         students = cursor.fetchall()
         return students
     except mysql.connector.Error as err:
