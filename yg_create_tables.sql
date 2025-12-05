@@ -1,0 +1,132 @@
+-- Westmont College CS 125 Database Design Fall 2025
+-- Final Project
+-- Assistant Professor Mike Ryu
+-- Caleb Song & David Oyebade
+
+DROP DATABASE IF EXISTS FP_YG_app;
+CREATE DATABASE FP_YG_app;
+USE FP_YG_app;
+
+CREATE TABLE Person(
+    ID INT AUTO_INCREMENT,
+    FirstName VARCHAR(100) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Address VARCHAR(100),
+    DateOfBirth CHAR(10),
+    PhoneNumber CHAR(12),
+    PRIMARY KEY(ID)
+);
+
+CREATE TABLE Student(
+    StudentID INT NOT NULL,
+    Grade INT,
+    FOREIGN KEY(StudentID) REFERENCES Person(ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Parent(
+    ParentID INT NOT NULL,
+    FOREIGN KEY(ParentID) REFERENCES Person(ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Volunteer(
+    VolunteerID INT NOT NULL,
+    FOREIGN KEY(VolunteerID) REFERENCES Person(ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Leader(
+    LeaderID INT NOT NULL,
+    Title VARCHAR(50),
+    FOREIGN KEY(LeaderID) REFERENCES Person(ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE StudentParent(
+    StudentID INT NOT NULL,
+    ParentID INT NOT NULL,
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID) ON DELETE CASCADE ON UPDATE CASCADE ,
+    FOREIGN KEY (ParentID) REFERENCES Parent(ParentID) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE SmallGroup(
+    ID INT AUTO_INCREMENT,
+    Name VARCHAR(50) NOT NULL,
+    MeetingTime Time NOT NULL,
+    PRIMARY KEY(ID)
+);
+
+CREATE TABLE PersonGroup(
+    PersonID INT NOT NULL,
+    SmallGroupID INT NOT NULL,
+    FOREIGN KEY (PersonID) REFERENCES Person(ID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (SmallGroupID) REFERENCES SmallGroup(ID) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE Place(
+    ID INT AUTO_INCREMENT,
+    Name VARCHAR(100),
+    Address VARCHAR(100),
+    PRIMARY KEY (ID)
+);
+
+## Added in event type to accommodate for new event type additions
+CREATE TABLE EventType (
+    ID INT AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    PRIMARY KEY(ID),
+    UNIQUE(Name)
+);
+
+
+CREATE TABLE Event(
+    ID INT AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    EventTypeID INT NOT NULL, -- New column to allow for event type
+    PlaceID INT NOT NULL,
+    StartDateTime DATETIME,
+    EndDateTime DATETIME,
+    PRIMARY KEY(ID),
+    FOREIGN KEY (EventTypeID) REFERENCES EventType(ID), -- New FOREIGN KEY
+    FOREIGN KEY (PlaceID) REFERENCES Place(ID),
+    CHECK ( EndDateTime > StartDateTime )
+);
+
+
+CREATE TABLE Registration(
+    ID INT AUTO_INCREMENT,
+    StudentID INT NOT NULL,
+    EventID INT NOT NULL,
+    RegistrantID INT,
+    PRIMARY KEY (ID),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(EventID) REFERENCES Event(ID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (RegistrantID) REFERENCES Person(ID) ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE(StudentID,EventID)
+);
+CREATE TABLE Task(
+    ID INT AUTO_INCREMENT,
+    Description VARCHAR(255),
+    PRIMARY KEY (ID)
+);
+CREATE TABLE ShiftCalender(
+    ID INT AUTO_INCREMENT,
+    VolunteerID INT,
+    LeaderID INT,
+    EventID INT NOT NULL,
+    Scheduled BOOLEAN DEFAULT FALSE,
+    TaskID INT NOT NULL,
+    PRIMARY KEY (ID),
+    FOREIGN KEY (VolunteerID) REFERENCES Volunteer(VolunteerID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (LeaderID) REFERENCES Leader(LeaderID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(EventID) REFERENCES Event(ID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (TaskID) REFERENCES Task(ID) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE Attendee(
+    RegistrationID INT NOT NULL,
+    CheckInTime TIME,
+    CheckOutTime TIME,
+FOREIGN KEY (RegistrationID) REFERENCES Registration(ID) ON DELETE CASCADE ON UPDATE CASCADE
+);
