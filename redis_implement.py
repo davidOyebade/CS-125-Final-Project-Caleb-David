@@ -1,4 +1,8 @@
 import redis
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 redis_client = None
@@ -8,11 +12,11 @@ def get_redis_client():
     if redis_client is None:
         try:
             redis_client = redis.Redis(
-                host='',
+                host= os.getenv("redis_host"),
                 port=16262,
                 decode_responses=True,
                 username="default",
-                password="",
+                password=os.getenv("redis_password"),
             )
             # Check connection
             redis_client.ping()

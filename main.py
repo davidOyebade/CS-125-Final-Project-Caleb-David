@@ -14,16 +14,17 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 import traceback
 import logging
-
+from dotenv import load_dotenv
 from mongodb_implement import get_mongo_client, get_mongo_db
 from redis_implement import get_redis_client, get_redis_conn
 
 # --- Database Configuration ---
 DB_USER = "root"
-DB_PASSWORD = ""
+DB_PASSWORD = os.getenv("DB_PASS")
 DB_HOST = "127.0.0.1"
 DB_NAME = "FP_YG_app"
 
+load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # --- Connection Pooling ---
