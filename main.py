@@ -60,6 +60,21 @@ class Student(BaseModel):
     FirstName: str
     LastName: str
     Grade: int
+class Parent(BaseModel):
+    ParentID: int
+    FirstName: str
+    LastName: str
+
+class VolunteerOutput(BaseModel):
+    VolunteerID: int
+    FirstName: str
+    LastName: str
+
+class LeaderOutput(BaseModel):
+    LeaderID: int
+    FirstName: str
+    LastName: str
+    Title: str | None = None
 
 # --- API Endpoints ---
 @app.get("/")
@@ -117,7 +132,7 @@ def get_all_students():
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT id, firstName, lastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id ORDER BY lastName, firstName;")
+        cursor.execute("SELECT id, FirstName, LastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id  ORDER BY lastName, firstName;")
         students = cursor.fetchall()
         return students
     except mysql.connector.Error as err:
@@ -244,6 +259,262 @@ def get_smallgroup_by_id(smallgroup_id: int):
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
+
+@app.get("/parents", response_model=list[Parent])
+def get_all_parents():
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+            SELECT Parent.ParentID, FirstName, LastName
+            FROM Parent 
+            JOIN Person ON Parent.ParentID = Person.ID;
+        """
+        cursor.execute(query)
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/parents/{parent_id}", response_model=Parent)
+def get_parent_by_id(parent_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+            SELECT ParentID, FirstName, LastName
+            FROM Parent JOIN Person ON ParentID = ID
+            WHERE ParentID = %s;
+        """
+        cursor.execute(query, (parent_id,))
+        parent = cursor.fetchone()
+        if not parent:
+            raise HTTPException(404, "Parent not found")
+        return parent
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/parent/search", response_model=list[Parent])
+def search_parents_by_name(name: str):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        like = f"%{name}%"
+        query = """
+            SELECT ParentID, FirstName, LastName
+            FROM Parent JOIN Person ON ParentID = ID
+            WHERE FirstName LIKE %s OR LastName LIKE %s;
+        """
+        cursor.execute(query, (like, like))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/students/{student_id}/parents", response_model=list[Parent])
+def get_parents_of_student(student_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT Parent.ParentID AS ParentID, FirstName, LastName
+            FROM StudentParent
+            JOIN Parent ON Parent.ParentID = StudentParent.ParentID
+            JOIN Person ON Parent.ParentID = Person.ID
+            WHERE StudentParent.StudentID = %s;
+        """
+        cursor.execute(query, (student_id,))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/people/search", response_model=list[Person])
+def search_people_by_name(name: str):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        like = f"%{name}%"
+        query = """
+            SELECT ID AS id, FirstName, LastName
+            FROM Person
+            WHERE FirstName LIKE %s OR LastName LIKE %s;
+        """
+        cursor.execute(query, (like, like))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+@app.post("/smallgroups/{group_id}/add/{person_id}")
+def add_person_to_small_group(group_id: int, person_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor()
+
+        cursor.execute(
+            "INSERT INTO PersonGroup(PersonID, SmallGroupID) VALUES (%s, %s);",
+            (person_id, group_id)
+        )
+        cnx.commit()
+        return {"message": "Person added to group"}
+    except mysql.connector.Error as err:
+        raise HTTPException(400, str(err))
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.delete("/smallgroups/{group_id}/remove/{person_id}")
+def remove_person_from_small_group(group_id: int, person_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor()
+
+        cursor.execute(
+            "DELETE FROM PersonGroup WHERE PersonID = %s AND SmallGroupID = %s;",
+            (person_id, group_id)
+        )
+        cnx.commit()
+        return {"message": "Person removed from group"}
+    finally:
+        cursor.close()
+        cnx.close()
+@app.get("/volunteers", response_model=list[VolunteerOutput])
+def get_volunteers():
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT VolunteerID, FirstName, LastName
+            FROM Volunteer JOIN Person ON VolunteerID = ID;
+        """)
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/events/{event_id}/roster")
+def get_event_roster(event_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+            SELECT Registration.ID AS RegistrationID, Student.StudentID, FirstName, LastName
+            FROM Registration
+            JOIN Student ON Registration.StudentID = Student.StudentID
+            JOIN Person ON Student.StudentID = Person.ID
+            WHERE EventID = %s;
+        """
+        cursor.execute(query, (event_id,))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/people/{person_id}/smallgroups")
+def get_smallgroups_for_person(person_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+            SELECT SmallGroup.ID, SmallGroup.Name
+            FROM PersonGroup
+            JOIN SmallGroup ON PersonGroup.SmallGroupID = SmallGroup.ID
+            WHERE PersonID = %s;
+        """
+        cursor.execute(query, (person_id,))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/leaders", response_model=list[LeaderOutput])
+def get_all_leaders():
+    """
+    Retrieve a list of all leaders.
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT Leader.LeaderID, Person.FirstName, Person.LastName, Leader.Title
+            FROM Leader
+            JOIN Person ON Leader.LeaderID = Person.ID
+            ORDER BY Person.LastName, Person.FirstName;
+        """
+
+        cursor.execute(query)
+        leaders = cursor.fetchall()
+        return leaders
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
+@app.get("/leaders/{leader_id}", response_model=LeaderOutput)
+def get_leader_by_id(leader_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT LeaderID, FirstName, LastName, Title
+            FROM Leader
+            JOIN Person ON LeaderID = ID
+            WHERE LeaderID = %s;
+        """, (leader_id,))
+        leader = cursor.fetchone()
+        if not leader:
+            raise HTTPException(404, "Leader not found")
+        return leader
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/leader/search", response_model=list[LeaderOutput])
+def search_leaders(name: str):
+    try:
+        like = f"%{name}%"
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT LeaderID, FirstName, LastName, Title
+            FROM Leader
+            JOIN Person ON LeaderID = ID
+            WHERE FirstName LIKE %s OR LastName LIKE %s;
+        """, (like, like))
+
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/smallgroups/{group_id}/roster")
+def get_small_group_roster(group_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT Person.ID, FirstName, LastName
+            FROM PersonGroup
+            JOIN Person ON PersonGroup.PersonID = Person.ID
+            WHERE SmallGroupID = %s
+            ORDER BY LastName, FirstName;
+        """, (group_id,))
+
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+
 
 
 @app.get("/demo", response_class=FileResponse)
