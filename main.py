@@ -1468,11 +1468,3 @@ async def read_demo():
     """
     return os.path.join(os.path.dirname(__file__), "index.html")
 
-
-if __name__ == "__main__":
-    print("\nTo run this FastAPI application:")
-    print("1. Make sure you have installed the required packages: pip install -r requirements.txt")
-    print("2. Run the server: uvicorn demo3_fastapi_app:app --reload --port 8000")
-    print("3. Open your browser and go to http://127.0.0.1:8000/docs for the API documentation.")
-    print("4. Open your browser and go to http://127.0.0.1:8000/demo for a UI demo.")
-
