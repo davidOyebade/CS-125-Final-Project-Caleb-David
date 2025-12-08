@@ -59,31 +59,31 @@ class Person(BaseModel):
 
 class Event(BaseModel):
     id: int
-    Name: str
+    name: str
 
 class SmallGroup(BaseModel):
     id: int
-    Name: str
+    name: str
 class Student(BaseModel):
     id: int
-    FirstName: str
-    LastName: str
-    Grade: int
+    firstName: str
+    lastName: str
+    grade: int
 class Parent(BaseModel):
-    ParentID: int
-    FirstName: str
-    LastName: str
+    parentID: int
+    firstName: str
+    lastName: str
 
 class VolunteerOutput(BaseModel):
-    VolunteerID: int
-    FirstName: str
-    LastName: str
+    volunteerID: int
+    firstName: str
+    lastName: str
 
 class LeaderOutput(BaseModel):
-    LeaderID: int
-    FirstName: str
-    LastName: str
-    Title: str | None = None
+    leaderID: int
+    firstName: str
+    lastName: str
+    title: str | None = None
 
 class CustomFieldDefinition(BaseModel):
     field_name: str
@@ -149,6 +149,37 @@ def get_all_people():
             cursor.close()
             cnx.close()
 
+@app.get("/people/search", response_model=list[Person])
+def search_people_by_name(name: str):
+    """
+    Search for people by first or last name (partial, case-insensitive match)
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT id, firstName, lastName
+            FROM Person
+            WHERE LOWER(firstName) LIKE LOWER(%s)
+               OR LOWER(lastName) LIKE LOWER(%s)
+            ORDER BY lastName, firstName;
+        """
+
+        wildcard = f"%{name}%"
+        cursor.execute(query, (wildcard, wildcard))
+
+        results = cursor.fetchall()
+        return results
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
 @app.get("/people/{person_id}", response_model=Person)
 def get_person_by_id(person_id: int):
     """
@@ -170,6 +201,123 @@ def get_person_by_id(person_id: int):
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
+@app.get("/people/{person_id}/smallgroups")
+def get_smallgroups_for_person(person_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+            SELECT SmallGroup.id, SmallGroup.name
+            FROM PersonGroup
+            JOIN SmallGroup ON PersonGroup.smallGroupID = SmallGroup.id
+            WHERE personID = %s;
+        """
+        cursor.execute(query, (person_id,))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+
+@app.get("/parents", response_model=list[Parent])
+def get_all_parents():
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+            SELECT Parent.parentID, firstName, lastName
+            FROM Parent 
+            JOIN Person ON Parent.parentID = Person.id;
+        """
+        cursor.execute(query)
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
+@app.get("/parents/search", response_model=list[Parent])
+def search_parents_by_name(name: str):
+    """
+    Search for parents by first or last name (partial, case-insensitive match)
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT p.id AS parentID, p.firstName, p.lastName
+            FROM Parent pr
+            JOIN Person p ON pr.parentID = p.id
+            WHERE LOWER(p.firstName) LIKE LOWER(%s)
+               OR LOWER(p.lastName) LIKE LOWER(%s)
+            ORDER BY p.lastName, p.firstName;
+        """
+
+        wildcard = f"%{name}%"
+        cursor.execute(query, (wildcard, wildcard))
+
+        results = cursor.fetchall()
+        return results
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
+@app.get("/parents/{parent_id}", response_model=Parent)
+def get_parent_by_id(parent_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+            SELECT parentID, firstName, lastName
+            FROM Parent JOIN Person ON parentID = id
+            WHERE parentID = %s;
+        """
+        cursor.execute(query, (parent_id,))
+        parent = cursor.fetchone()
+        if not parent:
+            raise HTTPException(404, "Parent not found")
+        return parent
+    finally:
+        cursor.close()
+        cnx.close()
+@app.get("/parents/{parent_id}/students", response_model=list[Student])
+def get_students_of_parent(parent_id: int):
+    """
+    Retrieves all students associated with a given parent
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT p.id AS id, p.firstName, p.lastName, s.grade
+            FROM StudentParent sp
+            JOIN Student s ON sp.studentID = s.studentID
+            JOIN Person p ON s.studentID = p.id
+            WHERE sp.parentID = %s
+            ORDER BY p.lastName, p.firstName;
+        """
+
+        cursor.execute(query, (parent_id,))
+        results = cursor.fetchall()
+        return results
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
+
+
+
 
 @app.get("/students", response_model=list[Student])
 def get_all_students():
@@ -179,7 +327,7 @@ def get_all_students():
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT id, FirstName, LastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id  ORDER BY lastName, firstName;")
+        cursor.execute("SELECT id, firstName, lastName, grade FROM Person JOIN Student ON Student.studentID = Person.id  ORDER BY lastName, firstName;")
         students = cursor.fetchall()
         return students
     except mysql.connector.Error as err:
@@ -188,7 +336,40 @@ def get_all_students():
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
-@app.get("/students/{student_grade}", response_model=list[Student])
+
+@app.get("/students/search", response_model=list[Student])
+def search_students_by_name(name: str):
+    """
+    Search for students by first or last name (partial, case-insensitive match)
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT 
+                p.id, p.firstName, p.lastName, s.grade
+            FROM Person p
+            JOIN Student s ON s.studentID = p.id
+            WHERE LOWER(p.firstName) LIKE LOWER(%s)
+               OR LOWER(p.lastName) LIKE LOWER(%s)
+            ORDER BY p.lastName, p.firstName;
+        """
+
+        wildcard = f"%{name}%"
+        cursor.execute(query, (wildcard, wildcard))
+
+        results = cursor.fetchall()
+        return results
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+
+@app.get("/students/grade/{student_grade}", response_model=list[Student])
 def get_students_by_grade(student_grade: int):
     """
     Retrieve students by grade
@@ -197,7 +378,7 @@ def get_students_by_grade(student_grade: int):
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         # Use parameterized query to prevent SQL injection
-        query = "SELECT id, FirstName, LastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id WHERE Grade = %s ORDER BY lastName, firstName;"
+        query = "SELECT id, firstName, lastName, grade FROM Person JOIN Student ON Student.studentID = Person.id WHERE Grade = %s ORDER BY lastName, firstName;"
         cursor.execute(query, (student_grade,))
         students = cursor.fetchall()
         if not students:
@@ -209,7 +390,7 @@ def get_students_by_grade(student_grade: int):
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
-@app.get("/student/{student_id}", response_model=Student)
+@app.get("/students/{student_id}", response_model=Student)
 def get_student_by_id(student_id: int):
     """
     Retrieves a specific student by their ID.
@@ -218,7 +399,7 @@ def get_student_by_id(student_id: int):
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         # Use parameterized query to prevent SQL injection
-        query = "SELECT id, firstName, lastName, Grade FROM Person JOIN Student ON Student.StudentID = Person.id WHERE id = %s;"
+        query = "SELECT id, firstName, lastName, grade FROM Person JOIN Student ON Student.studentID = Person.id WHERE id = %s;"
         cursor.execute(query, (student_id,))
         student = cursor.fetchone()
         if not student:
@@ -231,6 +412,25 @@ def get_student_by_id(student_id: int):
             cursor.close()
             cnx.close()
 
+@app.get("/students/{student_id}/parents", response_model=list[Parent])
+def get_parents_of_student(student_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT Parent.parentID AS parentID, firstName, lastName
+            FROM StudentParent
+            JOIN Parent ON Parent.parentID = StudentParent.parentID
+            JOIN Person ON Parent.parentID = Person.id
+            WHERE StudentParent.StudentID = %s;
+        """
+        cursor.execute(query, (student_id,))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
+
 
 @app.get("/events", response_model=list[Event])
 def get_all_events():
@@ -240,7 +440,7 @@ def get_all_events():
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT id, Name FROM Event ORDER BY Name;")
+        cursor.execute("SELECT id, name FROM Event ORDER BY name;")
         events = cursor.fetchall()
         return events
     except mysql.connector.Error as err:
@@ -250,13 +450,42 @@ def get_all_events():
             cursor.close()
             cnx.close()
 
+@app.get("/events/search", response_model=list[Event])
+def search_events_by_name(name: str):
+    """
+    Search for events by name (partial, case-insensitive match)
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT id, name
+            FROM Event
+            WHERE LOWER(name) LIKE LOWER(%s)
+            ORDER BY name;
+        """
+
+        wildcard = f"%{name}%"
+        cursor.execute(query, (wildcard,))
+
+        results = cursor.fetchall()
+        return results
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
 @app.get("/events/{event_id}", response_model=Event)
 def get_event_by_id(event_id: int):
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         # Use parameterized query to prevent SQL injection
-        query = "SELECT id, Name FROM Event WHERE id = %s;"
+        query = "SELECT id, name FROM Event WHERE id = %s;"
         cursor.execute(query, (event_id,))
         event = cursor.fetchone()
         if not event:
@@ -269,6 +498,23 @@ def get_event_by_id(event_id: int):
             cursor.close()
             cnx.close()
 
+@app.get("/events/{event_id}/roster")
+def get_event_roster(event_id: int):
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+            SELECT Registration.id AS RegistrationID, Student.studentID, firstName, lastName
+            FROM Registration
+            JOIN Student ON Registration.studentID = Student.studentID
+            JOIN Person ON Student.studentID = Person.id
+            WHERE eventID = %s;
+        """
+        cursor.execute(query, (event_id,))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        cnx.close()
 
 @app.get("/smallgroups", response_model=list[SmallGroup])
 def get_all_smallgroups():
@@ -278,7 +524,7 @@ def get_all_smallgroups():
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT id, Name FROM SmallGroup ORDER BY Name;")
+        cursor.execute("SELECT id, name FROM SmallGroup ORDER BY name;")
         smallgroups = cursor.fetchall()
         return smallgroups
     except mysql.connector.Error as err:
@@ -288,13 +534,42 @@ def get_all_smallgroups():
             cursor.close()
             cnx.close()
 
+@app.get("/smallgroups/search", response_model=list[SmallGroup])
+def search_smallgroups_by_name(name: str):
+    """
+    Search for small groups by name (partial, case-insensitive match)
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT id, name
+            FROM SmallGroup
+            WHERE LOWER(name) LIKE LOWER(%s)
+            ORDER BY name;
+        """
+
+        wildcard = f"%{name}%"
+        cursor.execute(query, (wildcard,))
+
+        results = cursor.fetchall()
+        return results
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
 @app.get("/smallgroups/{smallgroup_id}", response_model=SmallGroup)
 def get_smallgroup_by_id(smallgroup_id: int):
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         # Use parameterized query to prevent SQL injection
-        query = "SELECT id, Name FROM SmallGroup WHERE id = %s;"
+        query = "SELECT id, name FROM SmallGroup WHERE id = %s;"
         cursor.execute(query, (smallgroup_id,))
         smallgroup = cursor.fetchone()
         if not smallgroup:
@@ -306,94 +581,25 @@ def get_smallgroup_by_id(smallgroup_id: int):
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
-
-@app.get("/parents", response_model=list[Parent])
-def get_all_parents():
+@app.get("/smallgroups/{group_id}/roster")
+def get_small_group_roster(group_id: int):
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        query = """
-            SELECT Parent.ParentID, FirstName, LastName
-            FROM Parent 
-            JOIN Person ON Parent.ParentID = Person.ID;
-        """
-        cursor.execute(query)
+
+        cursor.execute("""
+            SELECT Person.id, firstName, lastName
+            FROM PersonGroup
+            JOIN Person ON PersonGroup.personID = Person.id
+            WHERE smallGroupID = %s
+            ORDER BY lastName, firstName;
+        """, (group_id,))
+
         return cursor.fetchall()
     finally:
         cursor.close()
         cnx.close()
 
-@app.get("/parents/{parent_id}", response_model=Parent)
-def get_parent_by_id(parent_id: int):
-    try:
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-        query = """
-            SELECT ParentID, FirstName, LastName
-            FROM Parent JOIN Person ON ParentID = ID
-            WHERE ParentID = %s;
-        """
-        cursor.execute(query, (parent_id,))
-        parent = cursor.fetchone()
-        if not parent:
-            raise HTTPException(404, "Parent not found")
-        return parent
-    finally:
-        cursor.close()
-        cnx.close()
-
-@app.get("/parent/search", response_model=list[Parent])
-def search_parents_by_name(name: str):
-    try:
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-        like = f"%{name}%"
-        query = """
-            SELECT ParentID, FirstName, LastName
-            FROM Parent JOIN Person ON ParentID = ID
-            WHERE FirstName LIKE %s OR LastName LIKE %s;
-        """
-        cursor.execute(query, (like, like))
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        cnx.close()
-
-@app.get("/students/{student_id}/parents", response_model=list[Parent])
-def get_parents_of_student(student_id: int):
-    try:
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-
-        query = """
-            SELECT Parent.ParentID AS ParentID, FirstName, LastName
-            FROM StudentParent
-            JOIN Parent ON Parent.ParentID = StudentParent.ParentID
-            JOIN Person ON Parent.ParentID = Person.ID
-            WHERE StudentParent.StudentID = %s;
-        """
-        cursor.execute(query, (student_id,))
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        cnx.close()
-
-@app.get("/people/search", response_model=list[Person])
-def search_people_by_name(name: str):
-    try:
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-        like = f"%{name}%"
-        query = """
-            SELECT ID AS id, FirstName, LastName
-            FROM Person
-            WHERE FirstName LIKE %s OR LastName LIKE %s;
-        """
-        cursor.execute(query, (like, like))
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        cnx.close()
 @app.post("/smallgroups/{group_id}/add/{person_id}")
 def add_person_to_small_group(group_id: int, person_id: int):
     try:
@@ -401,7 +607,7 @@ def add_person_to_small_group(group_id: int, person_id: int):
         cursor = cnx.cursor()
 
         cursor.execute(
-            "INSERT INTO PersonGroup(PersonID, SmallGroupID) VALUES (%s, %s);",
+            "INSERT INTO PersonGroup(personID, smallGroupID) VALUES (%s, %s);",
             (person_id, group_id)
         )
         cnx.commit()
@@ -419,7 +625,7 @@ def remove_person_from_small_group(group_id: int, person_id: int):
         cursor = cnx.cursor()
 
         cursor.execute(
-            "DELETE FROM PersonGroup WHERE PersonID = %s AND SmallGroupID = %s;",
+            "DELETE FROM PersonGroup WHERE personID = %s AND smallGroupID = %s;",
             (person_id, group_id)
         )
         cnx.commit()
@@ -433,48 +639,78 @@ def get_volunteers():
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         cursor.execute("""
-            SELECT VolunteerID, FirstName, LastName
-            FROM Volunteer JOIN Person ON VolunteerID = ID;
+            SELECT volunteerID, firstName, lastName
+            FROM Volunteer JOIN Person ON volunteerID = id;
         """)
         return cursor.fetchall()
     finally:
         cursor.close()
         cnx.close()
-
-@app.get("/events/{event_id}/roster")
-def get_event_roster(event_id: int):
+@app.get("/volunteers/search", response_model=list[VolunteerOutput])
+def search_volunteers_by_name(name: str):
+    """
+    Search for volunteers by first or last name (partial, case-insensitive match)
+    """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        query = """
-            SELECT Registration.ID AS RegistrationID, Student.StudentID, FirstName, LastName
-            FROM Registration
-            JOIN Student ON Registration.StudentID = Student.StudentID
-            JOIN Person ON Student.StudentID = Person.ID
-            WHERE EventID = %s;
-        """
-        cursor.execute(query, (event_id,))
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        cnx.close()
 
-@app.get("/people/{person_id}/smallgroups")
-def get_smallgroups_for_person(person_id: int):
+        query = """
+            SELECT v.volunteerID, p.firstName, p.lastName
+            FROM Volunteer v
+            JOIN Person p ON v.volunteerID = p.id
+            WHERE LOWER(p.firstName) LIKE LOWER(%s)
+               OR LOWER(p.lastName) LIKE LOWER(%s)
+            ORDER BY p.lastName, p.firstName;
+        """
+
+        wildcard = f"%{name}%"
+        cursor.execute(query, (wildcard, wildcard))
+        results = cursor.fetchall()
+        return results
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
+
+@app.get("/volunteers/{volunteer_id}", response_model=VolunteerOutput)
+def get_volunteer_by_id(volunteer_id: int):
+    """
+    Retrieve a volunteer by exact ID
+    """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
+
         query = """
-            SELECT SmallGroup.ID, SmallGroup.Name
-            FROM PersonGroup
-            JOIN SmallGroup ON PersonGroup.SmallGroupID = SmallGroup.ID
-            WHERE PersonID = %s;
+            SELECT v.volunteerID, p.firstName, p.lastName
+            FROM Volunteer v
+            JOIN Person p ON v.volunteerID = p.id
+            WHERE v.volunteerID = %s;
         """
-        cursor.execute(query, (person_id,))
-        return cursor.fetchall()
+
+        cursor.execute(query, (volunteer_id,))
+        result = cursor.fetchone()
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Volunteer not found")
+
+        return result
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
     finally:
-        cursor.close()
-        cnx.close()
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
+
 
 @app.get("/leaders", response_model=list[LeaderOutput])
 def get_all_leaders():
@@ -486,15 +722,47 @@ def get_all_leaders():
         cursor = cnx.cursor(dictionary=True)
 
         query = """
-            SELECT Leader.LeaderID, Person.FirstName, Person.LastName, Leader.Title
+            SELECT Leader.leaderID, Person.firstName, Person.lastName, Leader.title
             FROM Leader
-            JOIN Person ON Leader.LeaderID = Person.ID
-            ORDER BY Person.LastName, Person.FirstName;
+            JOIN Person ON Leader.leaderID = Person.id
+            ORDER BY Person.lastName, Person.firstName;
         """
 
         cursor.execute(query)
         leaders = cursor.fetchall()
         return leaders
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    finally:
+        if 'cnx' in locals() and cnx.is_connected():
+            cursor.close()
+            cnx.close()
+
+@app.get("/leaders/search", response_model=list[LeaderOutput])
+def search_leaders_by_name(name: str):
+    """
+    Search for leaders by first or last name (partial, case-insensitive match)
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+            SELECT l.leaderID, p.firstName, p.lastName, l.title
+            FROM Leader l
+            JOIN Person p ON l.leaderID = p.id
+            WHERE LOWER(p.firstName) LIKE LOWER(%s)
+               OR LOWER(p.lastName) LIKE LOWER(%s)
+            ORDER BY p.lastName, p.firstName;
+        """
+
+        wildcard = f"%{name}%"
+        cursor.execute(query, (wildcard, wildcard))
+
+        results = cursor.fetchall()
+        return results
 
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
@@ -510,10 +778,10 @@ def get_leader_by_id(leader_id: int):
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         cursor.execute("""
-            SELECT LeaderID, FirstName, LastName, Title
+            SELECT leaderID, firstName, lastName, title
             FROM Leader
-            JOIN Person ON LeaderID = ID
-            WHERE LeaderID = %s;
+            JOIN Person ON leaderID = id
+            WHERE leaderID = %s;
         """, (leader_id,))
         leader = cursor.fetchone()
         if not leader:
@@ -523,43 +791,6 @@ def get_leader_by_id(leader_id: int):
         cursor.close()
         cnx.close()
 
-@app.get("/leader/search", response_model=list[LeaderOutput])
-def search_leaders(name: str):
-    try:
-        like = f"%{name}%"
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-
-        cursor.execute("""
-            SELECT LeaderID, FirstName, LastName, Title
-            FROM Leader
-            JOIN Person ON LeaderID = ID
-            WHERE FirstName LIKE %s OR LastName LIKE %s;
-        """, (like, like))
-
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        cnx.close()
-
-@app.get("/smallgroups/{group_id}/roster")
-def get_small_group_roster(group_id: int):
-    try:
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-
-        cursor.execute("""
-            SELECT Person.ID, FirstName, LastName
-            FROM PersonGroup
-            JOIN Person ON PersonGroup.PersonID = Person.ID
-            WHERE SmallGroupID = %s
-            ORDER BY LastName, FirstName;
-        """, (group_id,))
-
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        cnx.close()
 
 
 @app.post("/event-types", status_code=201)
@@ -582,7 +813,7 @@ def create_new_event_type(event_type_data: EventTypeCreate):
         cnx = db_pool.get_connection()
         cursor = cnx.cursor()
 
-        insert_query = "INSERT INTO EventType (Name) VALUES (%s);"
+        insert_query = "INSERT INTO EventType (name) VALUES (%s);"
         cursor.execute(insert_query, (event_type_data.name,))
         cnx.commit()
 
@@ -692,20 +923,20 @@ def create_event_with_custom_data(event_data: EventCreate):
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT ID FROM EventType WHERE ID = %s;", (event_data.event_type_id,))
+        cursor.execute("SELECT id FROM EventType WHERE id = %s;", (event_data.event_type_id,))
         event_type = cursor.fetchone()
         if not event_type:
             raise HTTPException(status_code=404, detail="Event type not found")
 
         # Validate place exists
-        cursor.execute("SELECT ID FROM Place WHERE ID = %s;", (event_data.place_id,))
+        cursor.execute("SELECT id FROM Place WHERE id = %s;", (event_data.place_id,))
         place = cursor.fetchone()
         if not place:
             raise HTTPException(status_code=404, detail="Place not found")
 
         # Insert event into MySQL
         insert_query = """
-                       INSERT INTO Event (Name, EventTypeID, PlaceID, StartDateTime, EndDateTime)
+                       INSERT INTO Event (name, eventTypeID, placeID, startDateTime, endDateTime)
                        VALUES (%s, %s, %s, %s, %s); \
                        """
         cursor.execute(
@@ -784,7 +1015,7 @@ def get_event_with_custom_data(event_id: int):
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
         query = """
-                SELECT id, Name, EventTypeID, PlaceID, StartDateTime, EndDateTime
+                SELECT id, name, eventTypeID, placeID, startDateTime, endDateTime
                 FROM Event \
                 WHERE id = %s; \
                 """

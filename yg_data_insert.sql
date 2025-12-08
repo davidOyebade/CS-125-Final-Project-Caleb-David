@@ -20,6 +20,7 @@ TRUNCATE TABLE Parent;
 TRUNCATE TABLE Volunteer;
 TRUNCATE TABLE Leader;
 TRUNCATE TABLE Event;
+TRUNCATE TABLE EventType;
 TRUNCATE TABLE SmallGroup;
 TRUNCATE TABLE Place;
 TRUNCATE TABLE Task;
@@ -123,8 +124,7 @@ INSERT INTO Volunteer (VolunteerID) VALUES
 
 
 -- 6) INSERT Leader rows (LeaderID references Person.ID, plus Title)
--- Leaders are Person IDs 45..49? We only have up to 45 persons; to keep within 45, assign leaders to 41..45 where 41..44 are volunteers/leader names and 45 is 'Leader Cara' inserted above.
--- For clarity, we'll declare leaders as IDs 41..45 (some persons double as both volunteer/leader conceptually but stored in respective tables)
+-- Leaders are Person IDs 41..45
 INSERT INTO Leader (LeaderID, Title) VALUES
 (41, 'Youth Pastor'),
 (42, 'Small Group Leader'),
@@ -196,20 +196,33 @@ INSERT INTO Place (Name, Address) VALUES
 ('Cafeteria', '4 Campus Drive');
 
 
--- 11) INSERT Event (10 events)
--- PlaceID references the Place table created above (1..5)
--- Use varied Start/End datetimes (YYYY-MM-DD HH:MM:SS)
-INSERT INTO Event (Name, PlaceID, StartDateTime, EndDateTime) VALUES
-('Weekly Youth Night - Jan',     2, '2025-01-12 18:30:00', '2025-01-12 21:00:00'),
-('Weekly Youth Night - Feb',     2, '2025-02-09 18:30:00', '2025-02-09 21:00:00'),
-('Spring Retreat',               4, '2025-03-21 09:00:00', '2025-03-23 15:00:00'),
-('Service Project',              5, '2025-04-05 08:00:00', '2025-04-05 17:00:00'),
-('Summer Kickoff',               1, '2025-06-07 16:00:00', '2025-06-07 22:00:00'),
-('Back-to-School Bash',          3, '2025-08-20 17:00:00', '2025-08-20 20:00:00'),
-('Christmas Party',              2, '2025-12-14 18:00:00', '2025-12-14 21:00:00'),
-('Volunteer Training',           1, '2025-05-10 09:00:00', '2025-05-10 12:00:00'),
-('Parent Info Night',            1, '2025-09-15 19:00:00', '2025-09-15 20:30:00'),
-('Outreach Booth',               4, '2025-07-04 10:00:00', '2025-07-04 14:00:00');
+-- 11A) INSERT EventType (new table) -- must insert types before inserting Event rows
+INSERT INTO EventType (Name) VALUES
+('Weekly Youth Night'),
+('Retreat'),
+('Service Project'),
+('Social'),
+('Holiday Party'),
+('Volunteer Training'),
+('Parent Info Night'),
+('Outreach');
+
+
+-- 11B) INSERT Event (10 events)
+-- Now Event uses TypeID (references EventType), PlaceID references Place table (1..5)
+-- Columns: (TypeID, PlaceID, StartDateTime, EndDateTime)
+INSERT INTO Event (TypeID, PlaceID, StartDateTime, EndDateTime) VALUES
+-- TypeIDs chosen according to the EventType order above:
+(1, 2, '2025-01-12 18:30:00', '2025-01-12 21:00:00'), -- Weekly Youth Night - Jan (TypeID 1)
+(1, 2, '2025-02-09 18:30:00', '2025-02-09 21:00:00'), -- Weekly Youth Night - Feb (TypeID 1)
+(2, 4, '2025-03-21 09:00:00', '2025-03-23 15:00:00'), -- Spring Retreat (TypeID 2)
+(3, 5, '2025-04-05 08:00:00', '2025-04-05 17:00:00'), -- Service Project (TypeID 3)
+(4, 1, '2025-06-07 16:00:00', '2025-06-07 22:00:00'), -- Summer Kickoff (TypeID 4)
+(4, 3, '2025-08-20 17:00:00', '2025-08-20 20:00:00'), -- Back-to-School Bash (TypeID 4)
+(5, 2, '2025-12-14 18:00:00', '2025-12-14 21:00:00'), -- Christmas Party (TypeID 5)
+(6, 1, '2025-05-10 09:00:00', '2025-05-10 12:00:00'), -- Volunteer Training (TypeID 6)
+(7, 1, '2025-09-15 19:00:00', '2025-09-15 20:30:00'), -- Parent Info Night (TypeID 7)
+(8, 4, '2025-07-04 10:00:00', '2025-07-04 14:00:00'); -- Outreach Booth (TypeID 8)
 
 
 -- 12) INSERT Task (10 tasks)
