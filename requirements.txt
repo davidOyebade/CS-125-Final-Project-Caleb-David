@@ -1,0 +1,7 @@
+python-dotenv
+pydantic
+fastapi
+uvicorn
+mysql-connector-python
+pymongo
+redis

@@ -71,8 +71,15 @@ CREATE TABLE Place(
     PRIMARY KEY (ID)
 );
 
+CREATE TABLE EventType(
+    ID   INT AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    PRIMARY KEY (ID)
+);
+
 CREATE TABLE Event(
     ID INT AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
     TypeID INT NOT NULL,
     PlaceID INT NOT NULL,
     StartDateTime DATETIME,
@@ -83,11 +90,7 @@ CREATE TABLE Event(
     CHECK ( EndDateTime > StartDateTime )
 );
 
-CREATE TABLE EventType(
-    ID   INT AUTO_INCREMENT,
-    Name VARCHAR(100) NOT NULL,
-    PRIMARY KEY (ID)
-);
+
 
 CREATE TABLE Registration(
     ID INT AUTO_INCREMENT,
