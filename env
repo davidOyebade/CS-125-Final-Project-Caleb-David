@@ -1,4 +1,0 @@
-DB_PASS=cs125
-MONGO_URI=mongodb+srv://doyebade_db_user:Qmqwsl40ecUXVTaG@rushhourcluster1.5psh0lb.mongodb.net/?appName=RushHourCluster1
-redis_host=redis-16262.c289.us-west-1-2.ec2.cloud.redislabs.com
-redis_password=V9FaT0PWkXtJqJQPycmstGtZba6e7mGM
