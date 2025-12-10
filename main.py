@@ -21,7 +21,7 @@ from redis_implement import get_redis_client, get_redis_conn
 # --- Database Configuration ---
 DB_USER = "root"
 DB_PASSWORD = os.getenv("DB_PASS")
-DB_HOST = "127.0.0.1"
+DB_HOST = "mysql"
 DB_NAME = "FP_YG_app"
 
 load_dotenv()
@@ -29,6 +29,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # --- Connection Pooling ---
 try:
+    print("dbconnection info:", DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)
     db_pool = mysql.connector.pooling.MySQLConnectionPool(
         pool_name="fastapi_pool",
         pool_size=5,
@@ -84,6 +85,12 @@ class LeaderOutput(BaseModel):
     firstName: str
     lastName: str
     title: str | None = None
+
+class ShiftAssign(BaseModel):
+    volunteerID: int | None = None
+    leaderID: int | None = None
+    taskID: int
+    scheduled: bool = True
 
 class CustomFieldDefinition(BaseModel):
     field_name: str
@@ -498,6 +505,86 @@ def get_event_by_id(event_id: int):
             cursor.close()
             cnx.close()
 
+@app.post("/events/{event_id}/assign", status_code=201)
+def assign_to_event(event_id: int, data: ShiftAssign):
+    """
+    Assign a volunteer or leader to an event with a specific task.
+    Exactly one of volunteerID or leaderID must be provided.
+    """
+    if (data.volunteerID is None) == (data.leaderID is None):
+        raise HTTPException(400, "Provide either volunteerID OR leaderID, not both")
+
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor()
+
+        cursor.execute("""
+            INSERT INTO ShiftCalender (VolunteerID, LeaderID, EventID, Scheduled, TaskID)
+            VALUES (%s, %s, %s, %s, %s);
+        """, (data.volunteerID, data.leaderID, event_id, data.scheduled, data.taskID))
+
+        cnx.commit()
+
+        return {"message": "Assigned successfully"}
+
+    finally:
+        cursor.close()
+        cnx.close()
+@app.get("/events/{event_id}/workers")
+def get_event_workers(event_id: int):
+    """
+    Returns all volunteers and leaders assigned to an event, with task info.
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        # ---- GET VOLUNTEERS ----
+        cursor.execute("""
+            SELECT 
+                sc.ID AS shiftID,
+                p.ID AS personID,
+                p.firstName,
+                p.lastName,
+                t.ID AS taskID,
+                t.Description AS taskDescription,
+                'volunteer' AS role
+            FROM ShiftCalender sc
+            JOIN Volunteer v ON sc.VolunteerID = v.VolunteerID
+            JOIN Person p ON p.ID = v.VolunteerID
+            JOIN Task t ON sc.TaskID = t.ID
+            WHERE sc.EventID = %s;
+        """, (event_id,))
+        volunteers = cursor.fetchall()
+
+        # ---- GET LEADERS ----
+        cursor.execute("""
+            SELECT 
+                sc.ID AS shiftID,
+                p.ID AS personID,
+                p.firstName,
+                p.lastName,
+                l.Title AS leaderTitle,
+                t.ID AS taskID,
+                t.Description AS taskDescription,
+                'leader' AS role
+            FROM ShiftCalender sc
+            JOIN Leader l ON sc.LeaderID = l.LeaderID
+            JOIN Person p ON p.ID = l.LeaderID
+            JOIN Task t ON sc.TaskID = t.ID
+            WHERE sc.EventID = %s;
+        """, (event_id,))
+        leaders = cursor.fetchall()
+
+        return {
+            "event_id": event_id,
+            "workers": volunteers + leaders
+        }
+
+    finally:
+        cursor.close()
+        cnx.close()
+
 @app.get("/events/{event_id}/roster")
 def get_event_roster(event_id: int):
     try:
@@ -711,6 +798,36 @@ def get_volunteer_by_id(volunteer_id: int):
             cnx.close()
 
 
+@app.get("/volunteers/{volunteer_id}/tasks")
+def get_volunteer_tasks(volunteer_id: int):
+    """
+    Returns all tasks a volunteer is assigned, across all events.
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT
+                sc.ID AS shiftID,
+                e.ID AS eventID,
+                e.Name AS eventName,
+                e.StartDateTime,
+                e.EndDateTime,
+                t.ID AS taskID,
+                t.Description AS taskDescription
+            FROM ShiftCalender sc
+            JOIN Event e ON e.ID = sc.EventID
+            JOIN Task t ON t.ID = sc.TaskID
+            WHERE sc.VolunteerID = %s;
+        """, (volunteer_id,))
+
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        cnx.close()
+
 
 @app.get("/leaders", response_model=list[LeaderOutput])
 def get_all_leaders():
@@ -791,6 +908,37 @@ def get_leader_by_id(leader_id: int):
         cursor.close()
         cnx.close()
 
+@app.get("/leaders/{leader_id}/tasks")
+def get_leader_tasks(leader_id: int):
+    """
+    Returns all tasks a leader is assigned, across all events.
+    """
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT
+                sc.ID AS shiftID,
+                e.ID AS eventID,
+                e.Name AS eventName,
+                e.StartDateTime,
+                e.EndDateTime,
+                t.ID AS taskID,
+                t.Description AS taskDescription,
+                l.Title AS leaderTitle
+            FROM ShiftCalender sc
+            JOIN Event e ON e.ID = sc.EventID
+            JOIN Task t ON t.ID = sc.TaskID
+            JOIN Leader l ON l.LeaderID = sc.LeaderID
+            WHERE sc.LeaderID = %s;
+        """, (leader_id,))
+
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        cnx.close()
 
 
 @app.post("/event-types", status_code=201)
@@ -910,6 +1058,131 @@ def get_event_type_by_id(type_id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"MongoDB error: {e}")
+
+
+@app.get("/event-types/{type_id}/checked-in")
+def get_checked_in_for_event_type(type_id: int):
+    """
+    Returns all checked-in students for all events of a given event type.
+    Uses:
+    - MySQL to get events & student base info
+    - Redis to detect live check-ins
+    - MongoDB to enrich event data with custom fields
+    """
+
+    # ---------- 1) MYSQL: Get all events of this type ----------
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT id, name
+            FROM Event
+            WHERE TypeID = %s;
+        """, (type_id,))
+        events = cursor.fetchall()
+
+        if not events:
+            raise HTTPException(status_code=404, detail="No events found for this event type")
+
+        event_ids = [e["id"] for e in events]
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
+    finally:
+        if cursor: cursor.close()
+        if cnx and cnx.is_connected(): cnx.close()
+
+    # ---------- 2) REDIS: Find checked-in students per event ----------
+    if redisClient is None:
+        raise HTTPException(status_code=503, detail="Redis not available")
+
+    checked_in_map = {}  # event_id -> set(student_ids)
+    check_in_times_map = {}  # event_id -> {student_id: time}
+
+    try:
+        for event_id in event_ids:
+            set_key = f"event:{event_id}:checkedIn"
+            time_key = f"event:{event_id}:checkInTimes"
+
+            student_ids = redisClient.smembers(set_key)
+            times = redisClient.hgetall(time_key)
+
+            checked_in_map[event_id] = {int(s) for s in student_ids} if student_ids else set()
+            check_in_times_map[event_id] = times
+
+    except redis.RedisError as e:
+        raise HTTPException(status_code=500, detail=f"Redis error: {e}")
+
+    # Flatten all student IDs from all events
+    all_checked_in_ids = set().union(*checked_in_map.values())
+
+    # ---------- 3) MYSQL: Fetch student details ----------
+    student_details = {}
+    if all_checked_in_ids:
+        try:
+            cnx = db_pool.get_connection()
+            cursor = cnx.cursor(dictionary=True)
+
+            format_strings = ",".join(["%s"] * len(all_checked_in_ids))
+            cursor.execute(f"""
+                SELECT p.id, p.firstName, p.lastName, s.grade
+                FROM Person p
+                JOIN Student s ON s.studentID = p.id
+                WHERE p.id IN ({format_strings});
+            """, tuple(all_checked_in_ids))
+
+            for row in cursor.fetchall():
+                student_details[row["id"]] = row
+
+        except mysql.connector.Error as err:
+            raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
+        finally:
+            if cursor: cursor.close()
+            if cnx and cnx.is_connected(): cnx.close()
+
+    # ---------- 4) MONGODB: Fetch event custom data ----------
+    try:
+        mongo_collection = mongoDBclient["FP_YG_app"]["eventCustomData"]
+        mongo_docs = list(mongo_collection.find(
+            {"eventId": {"$in": event_ids}},
+            {"_id": 0}
+        ))
+
+        custom_by_event = {doc["eventId"]: doc.get("custom_field_values") for doc in mongo_docs}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"MongoDB error: {e}")
+
+    # ---------- 5) Build final combined response ----------
+    result = []
+
+    for event in events:
+        event_id = event["id"]
+
+        event_entry = {
+            "event_id": event_id,
+            "event_name": event["name"],
+            "custom_fields": custom_by_event.get(event_id),
+            "checked_in_students": []
+        }
+
+        for student_id in checked_in_map[event_id]:
+            event_entry["checked_in_students"].append({
+                "student_id": student_id,
+                "name": f"{student_details[student_id]['firstName']} {student_details[student_id]['lastName']}",
+                "grade": student_details[student_id]["grade"],
+                "check_in_time": check_in_times_map[event_id].get(str(student_id))
+            })
+
+        result.append(event_entry)
+
+    return {
+        "event_type_id": type_id,
+        "event_count": len(events),
+        "total_checked_in": len(all_checked_in_ids),
+        "events": result
+    }
 
 
 @app.post("/events", status_code=201)
@@ -1182,6 +1455,8 @@ def update_event_custom_data(event_id: int, custom_data_update: EventCustomDataU
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"MongoDB error: {e}")
+
+
 
 
 # ========== REDIS CHECK-IN ENDPOINTS ==========
