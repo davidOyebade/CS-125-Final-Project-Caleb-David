@@ -336,6 +336,345 @@
             border-radius: 4px;
             font-family: 'Courier New', monospace;
         }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .view-toggle button {
+            flex: 1;
+        }
+
+        .calendar-container {
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .calendar-nav button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .calendar-nav button:hover {
+            background: #5568d3;
+        }
+
+        .calendar-month-year {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            padding: 10px;
+            font-weight: 600;
+            color: #667eea;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .calendar-day {
+            min-height: 100px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .calendar-day:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .calendar-day.other-month {
+            background: #f8f9fa;
+            color: #999;
+        }
+
+        .calendar-day.today {
+            background: #e7f3ff;
+            border-color: #667eea;
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .calendar-day.other-month .day-number {
+            color: #999;
+        }
+
+        .calendar-event {
+            font-size: 0.75em;
+            padding: 3px 6px;
+            margin: 2px 0;
+            background: #667eea;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .calendar-event:hover {
+            background: #5568d3;
+            z-index: 10;
+            position: relative;
+        }
+
+        .event-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .event-details-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #667eea;
+        }
+
+        .close-modal {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .close-modal:hover {
+            background: #c82333;
+        }
+
+        .graphql-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .graphql-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .graphql-editor-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .graphql-results-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .graphql-editor {
+            width: 100%;
+            min-height: 400px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            background: #f8f9fa;
+        }
+
+        .graphql-editor:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .graphql-results {
+            width: 100%;
+            min-height: 400px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .graphql-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .graphql-examples {
+            margin-bottom: 15px;
+        }
+
+        .graphql-examples select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .graphql-examples select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .graphql-section-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .graphql-variables {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .graphql-variables:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .graphql-docs {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .graphql-docs h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .graphql-docs h4 {
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .graphql-docs code {
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .graphql-docs pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .graphql-field {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .graphql-field-name {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .graphql-field-type {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .graphql-field-description {
+            color: #333;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -356,6 +695,7 @@
             <button class="tab-button" onclick="showTab('smallgroups')">Small Groups</button>
             <button class="tab-button" onclick="showTab('eventtypes')">Event Types</button>
             <button class="tab-button" onclick="showTab('checkin')">Check-In</button>
+            <button class="tab-button" onclick="showTab('graphql')">GraphQL</button>
         </div>
 
         <!-- Dashboard Tab -->
@@ -387,6 +727,11 @@
         <!-- Events Tab -->
         <div id="events" class="tab-content">
             <h2 class="section-title">Events</h2>
+            <div class="view-toggle">
+                <button class="tab-button active" id="calendar-view-btn" onclick="switchEventView('calendar')">Calendar View</button>
+                <button class="tab-button" id="list-view-btn" onclick="switchEventView('list')">List View</button>
+                <button class="tab-button" id="create-event-btn" onclick="switchEventView('create')">Create Event</button>
+            </div>
             <div id="events-content">
                 <div class="loading">Loading events...</div>
             </div>
@@ -454,6 +799,144 @@
                 <p>Select an event to view check-ins</p>
             </div>
         </div>
+
+        <!-- GraphQL Tab -->
+        <div id="graphql" class="tab-content">
+            <h2 class="section-title">GraphQL Explorer</h2>
+            <p style="margin-bottom: 20px; color: #666;">Write and execute GraphQL queries and mutations. Use the examples below to get started.</p>
+            
+            <div class="graphql-examples">
+                <label><strong>Example Queries:</strong></label>
+                <select id="graphql-example-select" onchange="loadGraphQLExample()">
+                    <option value="">-- Select an example --</option>
+                    <option value="all-people">Get All People</option>
+                    <option value="person-by-id">Get Person by ID</option>
+                    <option value="all-events">Get All Events</option>
+                    <option value="events-with-counts">Get Events with Check-In Counts</option>
+                    <option value="event-by-id">Get Event by ID</option>
+                    <option value="all-smallgroups">Get All Small Groups</option>
+                    <option value="smallgroup-by-id">Get Small Group by ID</option>
+                    <option value="all-eventtypes">Get All Event Types</option>
+                    <option value="eventtype-by-id">Get Event Type by ID</option>
+                    <option value="checked-in-students">Get Checked-In Students</option>
+                    <option value="check-in-count">Get Check-In Count</option>
+                    <option value="create-event-type">Create Event Type (Mutation)</option>
+                    <option value="check-in-student">Check In Student (Mutation)</option>
+                    <option value="check-out-student">Check Out Student (Mutation)</option>
+                </select>
+            </div>
+
+            <div class="graphql-container">
+                <div class="graphql-editor-section">
+                    <div class="graphql-section-title">Query Editor</div>
+                    <textarea id="graphql-query" class="graphql-editor" placeholder="Enter your GraphQL query here..."></textarea>
+                    <div style="margin-top: 10px;">
+                        <label><strong>Variables (JSON):</strong> <small style="color: #666;">Optional - for queries with parameters</small></label>
+                        <textarea id="graphql-variables" class="graphql-variables" placeholder='{"eventId": 1}'></textarea>
+                    </div>
+                    <div class="graphql-controls">
+                        <button class="btn" onclick="executeGraphQLQuery()">Execute Query</button>
+                        <button class="btn btn-small" onclick="formatGraphQLQuery()">Format</button>
+                        <button class="btn btn-small" onclick="clearGraphQLQuery()">Clear</button>
+                    </div>
+                </div>
+
+                <div class="graphql-results-section">
+                    <div class="graphql-section-title">Results</div>
+                    <pre id="graphql-results" class="graphql-results">Results will appear here...</pre>
+                </div>
+            </div>
+
+            <div class="graphql-docs">
+                <h3>📚 GraphQL Schema Documentation</h3>
+                
+                <h4>Queries</h4>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">people: [Person!]!</div>
+                    <div class="graphql-field-type">Returns: List of all people</div>
+                    <div class="graphql-field-description">Retrieves a list of all people from MySQL.</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">person(personId: Int!): Person</div>
+                    <div class="graphql-field-type">Returns: Person object or null</div>
+                    <div class="graphql-field-description">Retrieves a specific person by their ID.</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">events: [Event!]!</div>
+                    <div class="graphql-field-type">Returns: List of basic event info</div>
+                    <div class="graphql-field-description">Retrieves a list of all events (basic info only).</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">eventsWithCounts: [EventWithCustomData!]!</div>
+                    <div class="graphql-field-type">Returns: List of events with check-in counts and custom data</div>
+                    <div class="graphql-field-description">Retrieves all events with check-in counts from Redis and custom data from MongoDB.</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">event(eventId: Int!): EventWithCustomData</div>
+                    <div class="graphql-field-type">Returns: Event with custom data or null</div>
+                    <div class="graphql-field-description">Retrieves an event with custom field values and check-in count.</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">smallGroups: [SmallGroup!]!</div>
+                    <div class="graphql-field-type">Returns: List of small groups</div>
+                    <div class="graphql-field-description">Retrieves a list of all small groups.</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">eventTypes: [EventType!]!</div>
+                    <div class="graphql-field-type">Returns: List of event types with schemas</div>
+                    <div class="graphql-field-description">Retrieves all event types with their custom field schemas.</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">checkedInStudents(eventId: Int!): CheckedInResponse</div>
+                    <div class="graphql-field-type">Returns: List of checked-in students</div>
+                    <div class="graphql-field-description">Gets all students currently checked in to an event.</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">checkInCount(eventId: Int!): CheckInCount</div>
+                    <div class="graphql-field-type">Returns: Check-in count for an event</div>
+                    <div class="graphql-field-description">Gets the current count of students checked in to an event.</div>
+                </div>
+
+                <h4>Mutations</h4>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">createEventType(eventTypeData: EventTypeCreateInput!): EventType</div>
+                    <div class="graphql-field-type">Returns: Created event type</div>
+                    <div class="graphql-field-description">Creates a new event type with custom fields. Input: {name: String!, customFields: [{fieldName: String!, dataType: String!}]}</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">checkInStudent(eventId: Int!, studentId: Int!): Boolean</div>
+                    <div class="graphql-field-type">Returns: true if successful</div>
+                    <div class="graphql-field-description">Checks a student into an event.</div>
+                </div>
+                <div class="graphql-field">
+                    <div class="graphql-field-name">checkOutStudent(eventId: Int!, studentId: Int!): Boolean</div>
+                    <div class="graphql-field-type">Returns: true if successful</div>
+                    <div class="graphql-field-description">Checks a student out of an event.</div>
+                </div>
+
+                <h4>Example Query</h4>
+                <pre>{
+  eventsWithCounts {
+    id
+    name
+    checkedIn
+    startDateTime
+    customFieldValues
+  }
+}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Details Modal -->
+    <div id="event-details-modal" class="event-details-modal" onclick="if(event.target.id === 'event-details-modal') closeEventModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-event-name">Event Details</h3>
+                <button class="close-modal" onclick="closeEventModal()">×</button>
+            </div>
+            <div id="modal-event-content"></div>
+        </div>
     </div>
 
     <script>
@@ -489,6 +972,9 @@
             else if (tabName === 'smallgroups') loadSmallGroups();
             else if (tabName === 'eventtypes') loadEventTypes();
             else if (tabName === 'checkin') loadCheckInEvents();
+            else if (tabName === 'graphql') {
+                // GraphQL tab doesn't need to load anything initially
+            }
         }
 
         // Dashboard
@@ -511,7 +997,7 @@
                             eventsWithCounts {
                                 id
                                 name
-                                checked_in
+                                checkedIn
                             }
                         }`
                     };
@@ -523,24 +1009,27 @@
                     });
 
                     const graphqlData = await graphqlResponse.json();
-                    if (graphqlData.data) {
-                        const totalCheckIns = graphqlData.data.eventsWithCounts?.reduce((sum, e) => sum + (e.checked_in || 0), 0) || 0;
+                    if (graphqlData.data && graphqlData.data.eventsWithCounts) {
+                        const totalCheckIns = graphqlData.data.eventsWithCounts.reduce((sum, e) => sum + (e.checkedIn || 0), 0);
                         document.getElementById('active-checkins').textContent = totalCheckIns;
 
                         // Show recent events with check-in counts
                         const html = `
                             <h3 style="margin-top: 30px;">Recent Events with Check-In Status</h3>
                             <div class="grid">
-                                ${graphqlData.data.eventsWithCounts?.slice(0, 6).map(event => `
+                                ${graphqlData.data.eventsWithCounts.slice(0, 6).map(event => `
                                     <div class="card">
                                         <h3>${event.name}</h3>
                                         <p><strong>ID:</strong> ${event.id}</p>
-                                        <p><span class="badge badge-success">${event.checked_in || 0} Checked In</span></p>
+                                        <p><span class="badge badge-success">${event.checkedIn || 0} Checked In</span></p>
                                     </div>
                                 `).join('') || '<p>No events found</p>'}
                             </div>
                         `;
                         document.getElementById('dashboard-content').innerHTML = html;
+                    } else if (graphqlData.errors) {
+                        console.error('GraphQL errors:', graphqlData.errors);
+                        document.getElementById('active-checkins').textContent = '?';
                     }
                 } catch (gqlError) {
                     console.error('GraphQL error:', gqlError);
@@ -548,6 +1037,30 @@
                 }
             } catch (error) {
                 document.getElementById('dashboard-content').innerHTML = `<div class="error">Error loading dashboard: ${error.message}</div>`;
+            }
+        }
+
+        // Events - Global state
+        let allEvents = [];
+        let currentEventView = 'calendar';
+        let currentCalendarDate = new Date();
+
+        // Switch between calendar, list, and create view
+        function switchEventView(view) {
+            currentEventView = view;
+            document.getElementById('calendar-view-btn').classList.toggle('active', view === 'calendar');
+            document.getElementById('list-view-btn').classList.toggle('active', view === 'list');
+            document.getElementById('create-event-btn').classList.toggle('active', view === 'create');
+            if (view === 'create') {
+                renderCreateEventForm();
+            } else if (allEvents.length > 0) {
+                if (view === 'calendar') {
+                    renderCalendar();
+                } else {
+                    renderEventList();
+                }
+            } else if (view !== 'create') {
+                loadEvents();
             }
         }
 
@@ -560,12 +1073,12 @@
                         eventsWithCounts {
                             id
                             name
-                            event_type_id
-                            place_id
-                            checked_in
-                            start_date_time
-                            end_date_time
-                            custom_field_values
+                            eventTypeId
+                            placeId
+                            checkedIn
+                            startDateTime
+                            endDateTime
+                            customFieldValues
                         }
                     }`
                 };
@@ -577,42 +1090,875 @@
                 });
 
                 const data = await response.json();
-                const events = data.data?.eventsWithCounts || [];
+                if (data.errors) {
+                    console.error('GraphQL errors:', data.errors);
+                    document.getElementById('events-content').innerHTML = `<div class="error">Error loading events: ${data.errors[0].message}</div>`;
+                    return;
+                }
 
-                if (events.length === 0) {
+                allEvents = data.data?.eventsWithCounts || [];
+
+                if (allEvents.length === 0) {
                     document.getElementById('events-content').innerHTML = '<p>No events found</p>';
                     return;
                 }
 
-                const html = `
-                    <div class="grid">
-                        ${events.map(event => `
-                            <div class="card">
-                                <h3>${event.name}</h3>
-                                <p><strong>ID:</strong> ${event.id}</p>
-                                <p><strong>Event Type ID:</strong> ${event.event_type_id}</p>
-                                <p><strong>Place ID:</strong> ${event.place_id}</p>
-                                <p><span class="badge badge-success">${event.checked_in || 0} Checked In</span></p>
-                                ${event.start_date_time ? `<p><strong>Start:</strong> ${new Date(event.start_date_time).toLocaleString()}</p>` : ''}
-                                ${event.end_date_time ? `<p><strong>End:</strong> ${new Date(event.end_date_time).toLocaleString()}</p>` : ''}
-                                ${event.custom_field_values ? `
-                                    <div class="custom-fields">
-                                        <strong>Custom Fields:</strong>
-                                        ${Object.entries(event.custom_field_values).map(([key, value]) => `
-                                            <div class="custom-field">
-                                                <strong>${key}:</strong> ${JSON.stringify(value)}
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                ` : ''}
+                // Render based on current view
+                if (currentEventView === 'calendar') {
+                    renderCalendar();
+                } else {
+                    renderEventList();
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+                document.getElementById('events-content').innerHTML = `<div class="error">Error loading events: ${error.message}</div>`;
+            }
+        }
+
+        // Render event list view
+        function renderEventList() {
+            const html = `
+                <div class="grid">
+                    ${allEvents.map(event => `
+                        <div class="card">
+                            <h3>${event.name}</h3>
+                            <p><strong>ID:</strong> ${event.id}</p>
+                            <p><strong>Event Type ID:</strong> ${event.eventTypeId}</p>
+                            <p><strong>Place ID:</strong> ${event.placeId}</p>
+                            <p><span class="badge badge-success">${event.checkedIn || 0} Checked In</span></p>
+                            ${event.startDateTime ? `<p><strong>Start:</strong> ${new Date(event.startDateTime).toLocaleString()}</p>` : ''}
+                            ${event.endDateTime ? `<p><strong>End:</strong> ${new Date(event.endDateTime).toLocaleString()}</p>` : ''}
+                            ${event.customFieldValues ? `
+                                <div class="custom-fields">
+                                    <strong>Custom Fields:</strong>
+                                    ${Object.entries(event.customFieldValues).map(([key, value]) => `
+                                        <div class="custom-field">
+                                            <strong>${key}:</strong> ${JSON.stringify(value)}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn btn-small" onclick="editEvent(${event.id})">Edit Event</button>
+                                <button class="btn btn-small" onclick="editEventCustomData(${event.id})">Edit Custom Data</button>
+                                <button class="btn btn-small" onclick="viewEventDetails(${event.id})">View Details</button>
                             </div>
-                        `).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('events-content').innerHTML = html;
+        }
+
+        // Render create event form
+        async function renderCreateEventForm() {
+            try {
+                // Load event types
+                const eventTypesRes = await fetch(`${API_BASE}/event-types`);
+                const eventTypes = await eventTypesRes.json();
+                
+                const html = `
+                    <div class="card" style="max-width: 800px; margin: 0 auto;">
+                        <h3>Create New Event</h3>
+                        <form id="create-event-form" onsubmit="createEvent(event)">
+                            <div class="form-group">
+                                <label>Event Name *</label>
+                                <input type="text" id="event-name" required placeholder="e.g., Spring Retreat 2025">
+                            </div>
+                            <div class="form-group">
+                                <label>Event Type *</label>
+                                <select id="event-type-id" required onchange="loadEventTypeCustomFields()">
+                                    <option value="">-- Select Event Type --</option>
+                                    ${eventTypes.map(et => `<option value="${et.event_type_id}">${et.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Place ID *</label>
+                                <input type="number" id="event-place-id" required placeholder="1-5" min="1" max="5">
+                                <small style="color: #666;">1=Youth Center, 2=Community Park, 3=Retreat Center, 4=Main Sanctuary, 5=Activity Hall</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Start Date & Time *</label>
+                                <input type="datetime-local" id="event-start-datetime" required>
+                            </div>
+                            <div class="form-group">
+                                <label>End Date & Time *</label>
+                                <input type="datetime-local" id="event-end-datetime" required>
+                            </div>
+                            <div id="custom-fields-container" style="margin-top: 20px;">
+                                <p style="color: #666;">Select an event type to see custom fields</p>
+                            </div>
+                            <button type="submit" class="btn" style="margin-top: 20px;">Create Event</button>
+                        </form>
                     </div>
                 `;
                 document.getElementById('events-content').innerHTML = html;
             } catch (error) {
-                document.getElementById('events-content').innerHTML = `<div class="error">Error loading events: ${error.message}</div>`;
+                console.error('Error loading form:', error);
+                document.getElementById('events-content').innerHTML = `<div class="error">Error loading form: ${error.message}</div>`;
             }
+        }
+
+        // Load custom fields for selected event type
+        async function loadEventTypeCustomFields() {
+            const eventTypeId = document.getElementById('event-type-id').value;
+            if (!eventTypeId) {
+                document.getElementById('custom-fields-container').innerHTML = '<p style="color: #666;">Select an event type to see custom fields</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/event-types/${eventTypeId}`);
+                const eventType = await response.json();
+                
+                if (!eventType.custom_fields || eventType.custom_fields.length === 0) {
+                    document.getElementById('custom-fields-container').innerHTML = '<p style="color: #666;">No custom fields for this event type</p>';
+                    return;
+                }
+
+                const html = `
+                    <h4>Custom Fields</h4>
+                    ${eventType.custom_fields.map(field => `
+                        <div class="form-group">
+                            <label>${field.field_name} (${field.data_type})</label>
+                            ${field.data_type === 'boolean' ? `
+                                <select class="custom-field-input" data-field="${field.field_name}" data-type="${field.data_type}">
+                                    <option value="">-- Select --</option>
+                                    <option value="true">True</option>
+                                    <option value="false">False</option>
+                                </select>
+                            ` : field.data_type === 'number' ? `
+                                <input type="number" class="custom-field-input" data-field="${field.field_name}" data-type="${field.data_type}" placeholder="Enter number">
+                            ` : `
+                                <input type="text" class="custom-field-input" data-field="${field.field_name}" data-type="${field.data_type}" placeholder="Enter ${field.field_name}">
+                            `}
+                        </div>
+                    `).join('')}
+                `;
+                document.getElementById('custom-fields-container').innerHTML = html;
+            } catch (error) {
+                document.getElementById('custom-fields-container').innerHTML = `<div class="error">Error loading custom fields: ${error.message}</div>`;
+            }
+        }
+
+        // Create event
+        async function createEvent(e) {
+            e.preventDefault();
+            const name = document.getElementById('event-name').value;
+            const eventTypeId = parseInt(document.getElementById('event-type-id').value);
+            const placeId = parseInt(document.getElementById('event-place-id').value);
+            const startDateTime = document.getElementById('event-start-datetime').value;
+            const endDateTime = document.getElementById('event-end-datetime').value;
+
+            // Collect custom field values
+            const customFieldInputs = document.querySelectorAll('.custom-field-input');
+            const customFieldValues = {};
+            customFieldInputs.forEach(input => {
+                const fieldName = input.dataset.field;
+                const dataType = input.dataset.type;
+                const value = input.value.trim();
+                if (value) {
+                    if (dataType === 'boolean') {
+                        customFieldValues[fieldName] = value === 'true';
+                    } else if (dataType === 'number') {
+                        customFieldValues[fieldName] = parseFloat(value);
+                    } else {
+                        customFieldValues[fieldName] = value;
+                    }
+                }
+            });
+
+            // Format datetime for API (ISO format)
+            // datetime-local gives format "YYYY-MM-DDTHH:mm", need to convert to ISO
+            let startISO, endISO;
+            try {
+                // Create date objects and convert to ISO string
+                const startDate = new Date(startDateTime);
+                const endDate = new Date(endDateTime);
+                
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                    alert('Invalid date format. Please check your dates.');
+                    return;
+                }
+                
+                startISO = startDate.toISOString();
+                endISO = endDate.toISOString();
+            } catch (dateError) {
+                alert('Error formatting dates: ' + dateError.message);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/events`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        event_type_id: eventTypeId,
+                        place_id: placeId,
+                        start_date_time: startISO,
+                        end_date_time: endISO,
+                        custom_field_values: Object.keys(customFieldValues).length > 0 ? customFieldValues : null
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert(`Event "${data.name}" created successfully with ID ${data.event_id}!`);
+                    document.getElementById('create-event-form').reset();
+                    document.getElementById('custom-fields-container').innerHTML = '<p style="color: #666;">Select an event type to see custom fields</p>';
+                    loadEvents();
+                    switchEventView('list');
+                } else {
+                    const errorMsg = data.detail || data.message || 'Unknown error';
+                    alert('Error: ' + errorMsg);
+                    console.error('Create event error:', data);
+                }
+            } catch (error) {
+                console.error('Create event error:', error);
+                alert('Error creating event: ' + error.message);
+            }
+        }
+
+        // Edit event (base fields)
+        async function editEvent(eventId) {
+            const event = allEvents.find(e => e.id === eventId);
+            if (!event) {
+                alert('Event not found');
+                return;
+            }
+
+            try {
+                // Load event types
+                const eventTypesRes = await fetch(`${API_BASE}/event-types`);
+                const eventTypes = await eventTypesRes.json();
+
+                const modal = document.getElementById('event-details-modal');
+                document.getElementById('modal-event-name').textContent = `Edit Event: ${event.name}`;
+                
+                // Format dates for datetime-local input
+                const startDate = event.startDateTime ? new Date(event.startDateTime).toISOString().slice(0, 16) : '';
+                const endDate = event.endDateTime ? new Date(event.endDateTime).toISOString().slice(0, 16) : '';
+                
+                const html = `
+                    <form id="edit-event-form" onsubmit="updateEvent(event, ${eventId})">
+                        <div class="form-group">
+                            <label>Event Name *</label>
+                            <input type="text" id="edit-event-name" value="${event.name}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Event Type *</label>
+                            <select id="edit-event-type-id" required>
+                                ${eventTypes.map(et => `
+                                    <option value="${et.event_type_id}" ${et.event_type_id === event.eventTypeId ? 'selected' : ''}>${et.name}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Place ID *</label>
+                            <input type="number" id="edit-event-place-id" value="${event.placeId}" required min="1" max="5">
+                            <small style="color: #666;">1=Youth Center, 2=Community Park, 3=Retreat Center, 4=Main Sanctuary, 5=Activity Hall</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Date & Time *</label>
+                            <input type="datetime-local" id="edit-event-start-datetime" value="${startDate}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>End Date & Time *</label>
+                            <input type="datetime-local" id="edit-event-end-datetime" value="${endDate}" required>
+                        </div>
+                        <button type="submit" class="btn">Update Event</button>
+                    </form>
+                `;
+                document.getElementById('modal-event-content').innerHTML = html;
+                modal.classList.add('active');
+            } catch (error) {
+                alert('Error loading event: ' + error.message);
+            }
+        }
+
+        // Update event
+        async function updateEvent(e, eventId) {
+            e.preventDefault();
+            const name = document.getElementById('edit-event-name').value;
+            const eventTypeId = parseInt(document.getElementById('edit-event-type-id').value);
+            const placeId = parseInt(document.getElementById('edit-event-place-id').value);
+            const startDateTime = document.getElementById('edit-event-start-datetime').value;
+            const endDateTime = document.getElementById('edit-event-end-datetime').value;
+
+            // Format datetime for API (ISO format)
+            const startISO = new Date(startDateTime).toISOString();
+            const endISO = new Date(endDateTime).toISOString();
+
+            try {
+                const response = await fetch(`${API_BASE}/events/${eventId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        event_type_id: eventTypeId,
+                        place_id: placeId,
+                        start_date_time: startISO,
+                        end_date_time: endISO
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Event updated successfully!');
+                    closeEventModal();
+                    loadEvents();
+                } else {
+                    alert('Error: ' + (data.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Edit event custom data
+        async function editEventCustomData(eventId) {
+            const event = allEvents.find(e => e.id === eventId);
+            if (!event) {
+                alert('Event not found');
+                return;
+            }
+
+            // Get event type to show custom fields
+            try {
+                const eventTypeRes = await fetch(`${API_BASE}/event-types/${event.eventTypeId}`);
+                const eventType = await eventTypeRes.json();
+
+                const modal = document.getElementById('event-details-modal');
+                document.getElementById('modal-event-name').textContent = `Edit Custom Data: ${event.name}`;
+                
+                const html = `
+                    <form id="edit-custom-data-form" onsubmit="updateEventCustomData(event, ${eventId})">
+                        ${eventType.custom_fields.map(field => {
+                            const currentValue = event.customFieldValues?.[field.field_name];
+                            return `
+                                <div class="form-group">
+                                    <label>${field.field_name} (${field.data_type})</label>
+                                    ${field.data_type === 'boolean' ? `
+                                        <select class="custom-field-edit" data-field="${field.field_name}" data-type="${field.data_type}" required>
+                                            <option value="true" ${currentValue === true ? 'selected' : ''}>True</option>
+                                            <option value="false" ${currentValue === false ? 'selected' : ''}>False</option>
+                                        </select>
+                                    ` : field.data_type === 'number' ? `
+                                        <input type="number" class="custom-field-edit" data-field="${field.field_name}" data-type="${field.data_type}" value="${currentValue || ''}" required>
+                                    ` : `
+                                        <input type="text" class="custom-field-edit" data-field="${field.field_name}" data-type="${field.data_type}" value="${currentValue || ''}" required>
+                                    `}
+                                </div>
+                            `;
+                        }).join('')}
+                        <button type="submit" class="btn">Update Custom Data</button>
+                    </form>
+                `;
+                document.getElementById('modal-event-content').innerHTML = html;
+                modal.classList.add('active');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Update event custom data
+        async function updateEventCustomData(e, eventId) {
+            e.preventDefault();
+            const customFieldInputs = document.querySelectorAll('.custom-field-edit');
+            const customFieldValues = {};
+            customFieldInputs.forEach(input => {
+                const fieldName = input.dataset.field;
+                const dataType = input.dataset.type;
+                const value = input.value.trim();
+                if (value) {
+                    if (dataType === 'boolean') {
+                        customFieldValues[fieldName] = value === 'true';
+                    } else if (dataType === 'number') {
+                        customFieldValues[fieldName] = parseFloat(value);
+                    } else {
+                        customFieldValues[fieldName] = value;
+                    }
+                }
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/events/${eventId}/custom-data`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ custom_field_values: customFieldValues })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Custom data updated successfully!');
+                    closeEventModal();
+                    loadEvents();
+                } else {
+                    alert('Error: ' + (data.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // View event details (roster, workers, etc.)
+        async function viewEventDetails(eventId) {
+            try {
+                const [eventRes, workersRes, rosterRes] = await Promise.all([
+                    fetch(`${API_BASE}/events/${eventId}`),
+                    fetch(`${API_BASE}/events/${eventId}/workers`),
+                    fetch(`${API_BASE}/events/${eventId}/roster`)
+                ]);
+
+                const event = await eventRes.json();
+                const workers = await workersRes.json();
+                const roster = await rosterRes.json();
+
+                const modal = document.getElementById('event-details-modal');
+                document.getElementById('modal-event-name').textContent = event.name || event.Name;
+                
+                const html = `
+                    <div>
+                        <p><strong>Event ID:</strong> ${eventId}</p>
+                        <p><strong>Event Type ID:</strong> ${event.event_type_id || event.EventTypeID}</p>
+                        <p><strong>Place ID:</strong> ${event.place_id || event.PlaceID}</p>
+                        ${event.start_date_time || event.StartDateTime ? `<p><strong>Start:</strong> ${new Date(event.start_date_time || event.StartDateTime).toLocaleString()}</p>` : ''}
+                        ${event.end_date_time || event.EndDateTime ? `<p><strong>End:</strong> ${new Date(event.end_date_time || event.EndDateTime).toLocaleString()}</p>` : ''}
+                        
+                        <h4 style="margin-top: 20px;">Workers (${workers.workers?.length || 0})</h4>
+                        ${workers.workers && workers.workers.length > 0 ? `
+                            <div class="grid">
+                                ${workers.workers.map(worker => `
+                                    <div class="card">
+                                        <p><strong>${worker.firstName} ${worker.lastName}</strong></p>
+                                        <p>Role: ${worker.role}</p>
+                                        <p>Task: ${worker.taskDescription}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : '<p>No workers assigned</p>'}
+                        
+                        <h4 style="margin-top: 20px;">Roster (${roster.length || 0})</h4>
+                        ${roster && roster.length > 0 ? `
+                            <div class="grid">
+                                ${roster.map(person => `
+                                    <div class="card">
+                                        <p><strong>${person.firstName || person.first_name} ${person.lastName || person.last_name}</strong></p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : '<p>No registrations</p>'}
+                    </div>
+                `;
+                document.getElementById('modal-event-content').innerHTML = html;
+                modal.classList.add('active');
+            } catch (error) {
+                alert('Error loading event details: ' + error.message);
+            }
+        }
+
+        // Render calendar view
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            // Get events for this month
+            const monthEvents = allEvents.filter(event => {
+                if (!event.startDateTime) return false;
+                const eventDate = new Date(event.startDateTime);
+                return eventDate.getFullYear() === year && eventDate.getMonth() === month;
+            });
+
+            // Group events by day
+            const eventsByDay = {};
+            monthEvents.forEach(event => {
+                const eventDate = new Date(event.startDateTime);
+                const day = eventDate.getDate();
+                if (!eventsByDay[day]) {
+                    eventsByDay[day] = [];
+                }
+                eventsByDay[day].push(event);
+            });
+
+            // Build calendar HTML
+            let calendarHTML = `
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button onclick="changeMonth(-1)">← Previous</button>
+                            <button onclick="goToToday()">Today</button>
+                            <button onclick="changeMonth(1)">Next →</button>
+                        </div>
+                        <div class="calendar-month-year">${monthNames[month]} ${year}</div>
+                    </div>
+                    <div class="calendar-grid">
+            `;
+
+            // Day headers
+            dayNames.forEach(day => {
+                calendarHTML += `<div class="calendar-day-header">${day}</div>`;
+            });
+
+            // Empty cells for days before month starts
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                calendarHTML += `<div class="calendar-day other-month"></div>`;
+            }
+
+            // Days of the month
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = today.getDate() === day && 
+                               today.getMonth() === month && 
+                               today.getFullYear() === year;
+                const dayEvents = eventsByDay[day] || [];
+                
+                calendarHTML += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}" onclick="showDayEvents(${day}, ${month}, ${year})">
+                        <div class="day-number">${day}</div>
+                        ${dayEvents.slice(0, 3).map(event => `
+                            <div class="calendar-event" onclick="event.stopPropagation(); showEventDetails(${event.id})" title="${event.name}">
+                                ${event.name}
+                            </div>
+                        `).join('')}
+                        ${dayEvents.length > 3 ? `<div class="calendar-event" style="background: #6c757d;">+${dayEvents.length - 3} more</div>` : ''}
+                    </div>
+                `;
+            }
+
+            // Fill remaining cells
+            const totalCells = startingDayOfWeek + daysInMonth;
+            const remainingCells = 7 - (totalCells % 7);
+            if (remainingCells < 7) {
+                for (let i = 0; i < remainingCells; i++) {
+                    calendarHTML += `<div class="calendar-day other-month"></div>`;
+                }
+            }
+
+            calendarHTML += `
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('events-content').innerHTML = calendarHTML;
+        }
+
+        // Calendar navigation
+        function changeMonth(direction) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function goToToday() {
+            currentCalendarDate = new Date();
+            renderCalendar();
+        }
+
+        // Show events for a specific day
+        function showDayEvents(day, month, year) {
+            const dayEvents = allEvents.filter(event => {
+                if (!event.startDateTime) return false;
+                const eventDate = new Date(event.startDateTime);
+                return eventDate.getDate() === day && 
+                       eventDate.getMonth() === month && 
+                       eventDate.getFullYear() === year;
+            });
+
+            if (dayEvents.length === 0) {
+                alert(`No events on ${month + 1}/${day}/${year}`);
+                return;
+            }
+
+            const dateStr = new Date(year, month, day).toLocaleDateString();
+            const html = `
+                <h3>Events on ${dateStr}</h3>
+                <div class="grid">
+                    ${dayEvents.map(event => `
+                        <div class="card">
+                            <h3>${event.name}</h3>
+                            <p><span class="badge badge-success">${event.checkedIn || 0} Checked In</span></p>
+                            ${event.startDateTime ? `<p><strong>Start:</strong> ${new Date(event.startDateTime).toLocaleString()}</p>` : ''}
+                            ${event.endDateTime ? `<p><strong>End:</strong> ${new Date(event.endDateTime).toLocaleString()}</p>` : ''}
+                            <button class="btn btn-small" onclick="showEventDetails(${event.id})">View Details</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('events-content').innerHTML = html;
+        }
+
+        // Show event details in modal
+        function showEventDetails(eventId) {
+            const event = allEvents.find(e => e.id === eventId);
+            if (!event) return;
+
+            document.getElementById('modal-event-name').textContent = event.name;
+            const modalContent = `
+                <p><strong>Event ID:</strong> ${event.id}</p>
+                <p><strong>Event Type ID:</strong> ${event.eventTypeId}</p>
+                <p><strong>Place ID:</strong> ${event.placeId}</p>
+                <p><span class="badge badge-success">${event.checkedIn || 0} Checked In</span></p>
+                ${event.startDateTime ? `<p><strong>Start:</strong> ${new Date(event.startDateTime).toLocaleString()}</p>` : ''}
+                ${event.endDateTime ? `<p><strong>End:</strong> ${new Date(event.endDateTime).toLocaleString()}</p>` : ''}
+                ${event.customFieldValues ? `
+                    <div class="custom-fields" style="margin-top: 15px;">
+                        <strong>Custom Fields:</strong>
+                        ${Object.entries(event.customFieldValues).map(([key, value]) => `
+                            <div class="custom-field">
+                                <strong>${key}:</strong> ${JSON.stringify(value)}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `;
+            document.getElementById('modal-event-content').innerHTML = modalContent;
+            document.getElementById('event-details-modal').classList.add('active');
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-details-modal').classList.remove('active');
+        }
+
+        // GraphQL Explorer Functions
+        const graphQLExamples = {
+            'all-people': `{
+  people {
+    id
+    firstName
+    lastName
+  }
+}`,
+            'person-by-id': `query GetPerson($personId: Int!) {
+  person(personId: $personId) {
+    id
+    firstName
+    lastName
+  }
+}`,
+            'all-events': `{
+  events {
+    id
+    name
+  }
+}`,
+            'events-with-counts': `{
+  eventsWithCounts {
+    id
+    name
+    eventTypeId
+    placeId
+    checkedIn
+    startDateTime
+    endDateTime
+    customFieldValues
+  }
+}`,
+            'event-by-id': `query GetEvent($eventId: Int!) {
+  event(eventId: $eventId) {
+    id
+    name
+    eventTypeId
+    placeId
+    checkedIn
+    startDateTime
+    endDateTime
+    customFieldValues
+  }
+}`,
+            'all-smallgroups': `{
+  smallGroups {
+    id
+    name
+  }
+}`,
+            'smallgroup-by-id': `query GetSmallGroup($smallgroupId: Int!) {
+  smallGroup(smallgroupId: $smallgroupId) {
+    id
+    name
+  }
+}`,
+            'all-eventtypes': `{
+  eventTypes {
+    eventTypeId
+    name
+    customFields {
+      fieldName
+      dataType
+    }
+  }
+}`,
+            'eventtype-by-id': `query GetEventType($typeId: Int!) {
+  eventType(typeId: $typeId) {
+    eventTypeId
+    name
+    customFields {
+      fieldName
+      dataType
+    }
+  }
+}`,
+            'checked-in-students': `query GetCheckedIn($eventId: Int!) {
+  checkedInStudents(eventId: $eventId) {
+    eventId
+    eventName
+    count
+    checkedInStudents {
+      studentId
+      checkInTime
+    }
+  }
+}`,
+            'check-in-count': `query GetCheckInCount($eventId: Int!) {
+  checkInCount(eventId: $eventId) {
+    eventId
+    eventName
+    checkedInCount
+  }
+}`,
+            'create-event-type': `mutation CreateEventType($eventTypeData: EventTypeCreateInput!) {
+  createEventType(eventTypeData: $eventTypeData) {
+    eventTypeId
+    name
+    customFields {
+      fieldName
+      dataType
+    }
+  }
+}`,
+            'check-in-student': `mutation CheckIn($eventId: Int!, $studentId: Int!) {
+  checkInStudent(eventId: $eventId, studentId: $studentId)
+}`,
+            'check-out-student': `mutation CheckOut($eventId: Int!, $studentId: Int!) {
+  checkOutStudent(eventId: $eventId, studentId: $studentId)
+}`
+        };
+
+        const graphQLExampleVariables = {
+            'person-by-id': '{"personId": 1}',
+            'event-by-id': '{"eventId": 1}',
+            'smallgroup-by-id': '{"smallgroupId": 1}',
+            'eventtype-by-id': '{"typeId": 1}',
+            'checked-in-students': '{"eventId": 1}',
+            'check-in-count': '{"eventId": 1}',
+            'create-event-type': '{"eventTypeData": {"name": "New Event Type", "customFields": [{"fieldName": "location", "dataType": "text"}]}}',
+            'check-in-student': '{"eventId": 1, "studentId": 1}',
+            'check-out-student': '{"eventId": 1, "studentId": 1}'
+        };
+
+        function loadGraphQLExample() {
+            const select = document.getElementById('graphql-example-select');
+            const exampleKey = select.value;
+            if (!exampleKey) return;
+
+            const query = graphQLExamples[exampleKey];
+            const variables = graphQLExampleVariables[exampleKey] || '';
+
+            if (query) {
+                document.getElementById('graphql-query').value = query;
+                document.getElementById('graphql-variables').value = variables;
+            }
+        }
+
+        async function executeGraphQLQuery() {
+            const queryText = document.getElementById('graphql-query').value.trim();
+            const variablesText = document.getElementById('graphql-variables').value.trim();
+            const resultsElement = document.getElementById('graphql-results');
+
+            if (!queryText) {
+                resultsElement.textContent = 'Error: Please enter a GraphQL query.';
+                return;
+            }
+
+            resultsElement.textContent = 'Executing query...';
+
+            try {
+                let variables = null;
+                if (variablesText) {
+                    try {
+                        variables = JSON.parse(variablesText);
+                    } catch (e) {
+                        resultsElement.textContent = `Error: Invalid JSON in variables field.\n${e.message}`;
+                        return;
+                    }
+                }
+
+                const requestBody = {
+                    query: queryText,
+                    ...(variables && { variables })
+                };
+
+                const response = await fetch(GRAPHQL_BASE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                
+                // Format the response nicely
+                resultsElement.textContent = JSON.stringify(data, null, 2);
+                
+                // Highlight errors if any
+                if (data.errors) {
+                    resultsElement.style.color = '#ff6b6b';
+                } else {
+                    resultsElement.style.color = '#51cf66';
+                }
+            } catch (error) {
+                resultsElement.textContent = `Error: ${error.message}`;
+                resultsElement.style.color = '#ff6b6b';
+            }
+        }
+
+        function formatGraphQLQuery() {
+            const queryText = document.getElementById('graphql-query').value.trim();
+            if (!queryText) return;
+
+            // Simple formatting - remove extra whitespace and add proper indentation
+            try {
+                // Remove comments and normalize whitespace
+                let formatted = queryText
+                    .replace(/\s+/g, ' ')
+                    .replace(/\{\s+/g, '{\n  ')
+                    .replace(/\s+\}/g, '\n}')
+                    .replace(/,\s+/g, ',\n  ')
+                    .replace(/:\s+/g, ': ');
+
+                // Basic indentation
+                const lines = formatted.split('\n');
+                let indent = 0;
+                formatted = lines.map(line => {
+                    const trimmed = line.trim();
+                    if (trimmed.endsWith('}')) indent = Math.max(0, indent - 1);
+                    const result = '  '.repeat(indent) + trimmed;
+                    if (trimmed.endsWith('{')) indent++;
+                    return result;
+                }).join('\n');
+
+                document.getElementById('graphql-query').value = formatted;
+            } catch (e) {
+                // If formatting fails, just keep the original
+                console.error('Formatting error:', e);
+            }
+        }
+
+        function clearGraphQLQuery() {
+            document.getElementById('graphql-query').value = '';
+            document.getElementById('graphql-variables').value = '';
+            document.getElementById('graphql-results').textContent = 'Results will appear here...';
+            document.getElementById('graphql-results').style.color = '#d4d4d4';
+            document.getElementById('graphql-example-select').value = '';
         }
 
         // People
@@ -627,11 +1973,18 @@
                 }
 
                 const html = `
-                    <div class="grid">
+                    <div style="margin-bottom: 20px;">
+                        <div class="form-group" style="max-width: 400px;">
+                            <label>Search People</label>
+                            <input type="text" id="people-search" placeholder="Search by name..." onkeyup="searchPeople(event)">
+                        </div>
+                    </div>
+                    <div class="grid" id="people-grid">
                         ${people.map(person => `
                             <div class="card">
                                 <h3>${person.firstName} ${person.lastName}</h3>
                                 <p><strong>ID:</strong> ${person.id}</p>
+                                <button class="btn btn-small" onclick="viewPersonDetails(${person.id})" style="margin-top: 10px;">View Details</button>
                             </div>
                         `).join('')}
                     </div>
@@ -639,6 +1992,80 @@
                 document.getElementById('people-content').innerHTML = html;
             } catch (error) {
                 document.getElementById('people-content').innerHTML = `<div class="error">Error loading people: ${error.message}</div>`;
+            }
+        }
+
+        // Search people
+        async function searchPeople(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                const query = document.getElementById('people-search').value.trim();
+                if (!query) {
+                    loadPeople();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE}/people/search?q=${encodeURIComponent(query)}`);
+                    const people = await response.json();
+
+                    const html = `
+                        <div class="grid">
+                            ${people.length > 0 ? people.map(person => `
+                                <div class="card">
+                                    <h3>${person.firstName} ${person.lastName}</h3>
+                                    <p><strong>ID:</strong> ${person.id}</p>
+                                    <button class="btn btn-small" onclick="viewPersonDetails(${person.id})" style="margin-top: 10px;">View Details</button>
+                                </div>
+                            `).join('') : '<p>No people found</p>'}
+                        </div>
+                    `;
+                    document.getElementById('people-grid').innerHTML = html;
+                } catch (error) {
+                    console.error('Search error:', error);
+                }
+            }
+        }
+
+        // View person details
+        async function viewPersonDetails(personId) {
+            try {
+                const [personRes, smallgroupsRes] = await Promise.all([
+                    fetch(`${API_BASE}/people/${personId}`),
+                    fetch(`${API_BASE}/people/${personId}/smallgroups`)
+                ]);
+
+                const person = await personRes.json();
+                const smallgroups = await smallgroupsRes.json();
+
+                const modal = document.getElementById('event-details-modal');
+                document.getElementById('modal-event-name').textContent = `${person.firstName} ${person.lastName}`;
+                
+                const html = `
+                    <div>
+                        <p><strong>ID:</strong> ${person.id}</p>
+                        <p><strong>First Name:</strong> ${person.firstName}</p>
+                        <p><strong>Last Name:</strong> ${person.lastName}</p>
+                        ${person.Address ? `<p><strong>Address:</strong> ${person.Address}</p>` : ''}
+                        ${person.DateOfBirth ? `<p><strong>Date of Birth:</strong> ${person.DateOfBirth}</p>` : ''}
+                        ${person.PhoneNumber ? `<p><strong>Phone:</strong> ${person.PhoneNumber}</p>` : ''}
+                        
+                        <h4 style="margin-top: 20px;">Small Groups (${smallgroups.length})</h4>
+                        ${smallgroups.length > 0 ? `
+                            <div class="grid">
+                                ${smallgroups.map(group => `
+                                    <div class="card">
+                                        <p><strong>${group.name || group.Name}</strong></p>
+                                        <p>ID: ${group.id}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : '<p>Not in any small groups</p>'}
+                    </div>
+                `;
+                document.getElementById('modal-event-content').innerHTML = html;
+                modal.classList.add('active');
+            } catch (error) {
+                alert('Error loading person details: ' + error.message);
             }
         }
 
@@ -659,6 +2086,10 @@
                             <div class="card">
                                 <h3>${group.Name}</h3>
                                 <p><strong>ID:</strong> ${group.id}</p>
+                                <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button class="btn btn-small" onclick="viewSmallGroupRoster(${group.id}, '${group.Name}')">View Roster</button>
+                                    <button class="btn btn-small" onclick="manageSmallGroupMembers(${group.id}, '${group.Name}')">Manage Members</button>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
@@ -666,6 +2097,150 @@
                 document.getElementById('smallgroups-content').innerHTML = html;
             } catch (error) {
                 document.getElementById('smallgroups-content').innerHTML = `<div class="error">Error loading small groups: ${error.message}</div>`;
+            }
+        }
+
+        // View small group roster
+        async function viewSmallGroupRoster(groupId, groupName) {
+            try {
+                const response = await fetch(`${API_BASE}/smallgroups/${groupId}/roster`);
+                const roster = await response.json();
+
+                const modal = document.getElementById('event-details-modal');
+                document.getElementById('modal-event-name').textContent = `Roster: ${groupName}`;
+                
+                const html = `
+                    <div>
+                        <p><strong>Group ID:</strong> ${groupId}</p>
+                        <p><strong>Total Members:</strong> ${roster.length}</p>
+                        <h4 style="margin-top: 20px;">Members</h4>
+                        ${roster.length > 0 ? `
+                            <div class="grid">
+                                ${roster.map(person => `
+                                    <div class="card">
+                                        <p><strong>${person.firstName} ${person.lastName}</strong></p>
+                                        <p>ID: ${person.id}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : '<p>No members in this group</p>'}
+                    </div>
+                `;
+                document.getElementById('modal-event-content').innerHTML = html;
+                modal.classList.add('active');
+            } catch (error) {
+                alert('Error loading roster: ' + error.message);
+            }
+        }
+
+        // Manage small group members (add/remove)
+        async function manageSmallGroupMembers(groupId, groupName) {
+            try {
+                // Load all people and current roster
+                const [peopleRes, rosterRes] = await Promise.all([
+                    fetch(`${API_BASE}/people`),
+                    fetch(`${API_BASE}/smallgroups/${groupId}/roster`)
+                ]);
+
+                const allPeople = await peopleRes.json();
+                const roster = await rosterRes.json();
+                const rosterIds = new Set(roster.map(p => p.id));
+
+                const modal = document.getElementById('event-details-modal');
+                document.getElementById('modal-event-name').textContent = `Manage Members: ${groupName}`;
+                
+                const html = `
+                    <div>
+                        <p><strong>Group ID:</strong> ${groupId}</p>
+                        <p><strong>Current Members:</strong> ${roster.length}</p>
+                        
+                        <h4 style="margin-top: 20px;">Add Member</h4>
+                        <div class="form-group">
+                            <label>Select Person to Add</label>
+                            <select id="add-person-select">
+                                <option value="">-- Select Person --</option>
+                                ${allPeople.filter(p => !rosterIds.has(p.id)).map(person => `
+                                    <option value="${person.id}">${person.firstName} ${person.lastName} (ID: ${person.id})</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <button class="btn" onclick="addPersonToSmallGroup(${groupId})">Add to Group</button>
+
+                        <h4 style="margin-top: 30px;">Remove Member</h4>
+                        ${roster.length > 0 ? `
+                            <div class="form-group">
+                                <label>Select Person to Remove</label>
+                                <select id="remove-person-select">
+                                    <option value="">-- Select Person --</option>
+                                    ${roster.map(person => `
+                                        <option value="${person.id}">${person.firstName} ${person.lastName} (ID: ${person.id})</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                            <button class="btn btn-danger" onclick="removePersonFromSmallGroup(${groupId})">Remove from Group</button>
+                        ` : '<p>No members to remove</p>'}
+                    </div>
+                `;
+                document.getElementById('modal-event-content').innerHTML = html;
+                modal.classList.add('active');
+            } catch (error) {
+                alert('Error loading members: ' + error.message);
+            }
+        }
+
+        // Add person to small group
+        async function addPersonToSmallGroup(groupId) {
+            const personId = document.getElementById('add-person-select').value;
+            if (!personId) {
+                alert('Please select a person to add');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/smallgroups/${groupId}/add/${personId}`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert(data.message || 'Person added successfully!');
+                    closeEventModal();
+                    loadSmallGroups();
+                } else {
+                    alert('Error: ' + (data.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Remove person from small group
+        async function removePersonFromSmallGroup(groupId) {
+            const personId = document.getElementById('remove-person-select').value;
+            if (!personId) {
+                alert('Please select a person to remove');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to remove this person from the group?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/smallgroups/${groupId}/remove/${personId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert(data.message || 'Person removed successfully!');
+                    closeEventModal();
+                    loadSmallGroups();
+                } else {
+                    alert('Error: ' + (data.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
             }
         }
 
@@ -794,38 +2369,73 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE}/events/${eventId}/checked-in`);
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                // Load roster (registered students) and checked-in students
+                const [rosterRes, checkedInRes] = await Promise.all([
+                    fetch(`${API_BASE}/events/${eventId}/roster`),
+                    fetch(`${API_BASE}/events/${eventId}/checked-in`)
+                ]);
+
+                if (!checkedInRes.ok) {
+                    throw new Error(`HTTP ${checkedInRes.status}: ${checkedInRes.statusText}`);
                 }
-                const data = await response.json();
+
+                const roster = await rosterRes.json();
+                const checkedInData = await checkedInRes.json();
+                
+                // Create a set of checked-in student IDs for quick lookup
+                const checkedInIds = new Set(
+                    (checkedInData.checked_in_students || []).map(s => s.student_id.toString())
+                );
 
                 const html = `
                     <div class="card">
-                        <h3>${data.event_name}</h3>
-                        <p><strong>Event ID:</strong> ${data.event_id}</p>
-                        <p><span class="badge badge-success">${data.count} Checked In</span></p>
+                        <h3>${checkedInData.event_name}</h3>
+                        <p><strong>Event ID:</strong> ${checkedInData.event_id}</p>
+                        <p><span class="badge badge-success">${checkedInData.count || 0} Checked In</span></p>
+                        <p><span class="badge badge-info">${roster.length} Registered Students</span></p>
+                        
                         <div style="margin-top: 20px;">
-                            <h4>Checked-In Students:</h4>
-                            ${data.checked_in_students && data.checked_in_students.length > 0 ? `
+                            <h4>Registered Students</h4>
+                            ${roster.length > 0 ? `
                                 <div class="grid">
-                                    ${data.checked_in_students.map(student => `
-                                        <div class="card">
-                                            <p><strong>Student ID:</strong> ${student.student_id}</p>
-                                            <p><strong>Check-In Time:</strong> ${student.check_in_time || 'N/A'}</p>
-                                        </div>
-                                    `).join('')}
+                                    ${roster.map(student => {
+                                        const studentId = student.studentID || student.student_id;
+                                        const isCheckedIn = checkedInIds.has(studentId.toString());
+                                        const checkedInStudent = checkedInData.checked_in_students?.find(s => 
+                                            (s.student_id || s.studentId) == studentId
+                                        );
+                                        
+                                        return `
+                                            <div class="card" style="border-left: 4px solid ${isCheckedIn ? '#28a745' : '#6c757d'};">
+                                                <p><strong>${student.firstName || student.first_name} ${student.lastName || student.last_name}</strong></p>
+                                                <p><strong>Student ID:</strong> ${studentId}</p>
+                                                ${isCheckedIn ? `
+                                                    <p><span class="badge badge-success">Checked In</span></p>
+                                                    <p><strong>Check-In Time:</strong> ${checkedInStudent?.check_in_time || 'N/A'}</p>
+                                                    <button class="btn btn-danger btn-small" onclick="checkOutStudent(${eventId}, ${studentId})" style="margin-top: 10px;">Check Out</button>
+                                                ` : `
+                                                    <p><span class="badge" style="background: #6c757d; color: white;">Not Checked In</span></p>
+                                                    <button class="btn btn-success btn-small" onclick="checkInStudent(${eventId}, ${studentId})" style="margin-top: 10px;">Check In</button>
+                                                `}
+                                            </div>
+                                        `;
+                                    }).join('')}
                                 </div>
-                            ` : '<p>No students checked in</p>'}
+                            ` : '<p>No students registered for this event</p>'}
                         </div>
-                        <div class="check-in-controls" style="margin-top: 20px;">
-                            <div class="form-group">
-                                <label>Student ID</label>
-                                <input type="number" id="checkin-student-id" placeholder="Enter student ID">
+                        
+                        <div style="margin-top: 30px;">
+                            <h4>Manual Check-In (if student not in list above)</h4>
+                            <div class="check-in-controls">
+                                <div class="form-group">
+                                    <label>Student ID</label>
+                                    <input type="number" id="checkin-student-id" placeholder="Enter student ID">
+                                </div>
+                                <button class="btn btn-success" onclick="checkInStudent(${eventId})">Check In</button>
+                                <button class="btn btn-danger" onclick="checkOutStudent(${eventId})">Check Out</button>
                             </div>
-                            <button class="btn btn-success" onclick="checkInStudent(${eventId})">Check In</button>
-                            <button class="btn btn-danger" onclick="checkOutStudent(${eventId})">Check Out</button>
                         </div>
+                        
                         <div style="margin-top: 20px;">
                             <button class="btn" onclick="finalizeEvent(${eventId})">Finalize Event (Save to MySQL)</button>
                         </div>
@@ -833,15 +2443,19 @@
                 `;
                 document.getElementById('checkin-content').innerHTML = html;
             } catch (error) {
+                console.error('Error loading check-ins:', error);
                 document.getElementById('checkin-content').innerHTML = `<div class="error">Error loading check-ins: ${error.message}</div>`;
             }
         }
 
-        async function checkInStudent(eventId) {
-            const studentId = document.getElementById('checkin-student-id').value;
+        async function checkInStudent(eventId, studentId = null) {
+            // If studentId is provided as parameter, use it; otherwise get from input
             if (!studentId) {
-                alert('Please enter a student ID');
-                return;
+                studentId = document.getElementById('checkin-student-id')?.value;
+                if (!studentId) {
+                    alert('Please enter a student ID');
+                    return;
+                }
             }
 
             try {
@@ -850,7 +2464,12 @@
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    alert(data.message || 'Student checked in successfully!');
+                    // Don't show alert if called from button (studentId was provided)
+                    if (!document.getElementById('checkin-student-id')?.value) {
+                        // Silent update if called from button
+                    } else {
+                        alert(data.message || 'Student checked in successfully!');
+                    }
                     loadEventCheckIns();
                 } else {
                     alert('Error: ' + (data.detail || 'Unknown error'));
@@ -860,11 +2479,14 @@
             }
         }
 
-        async function checkOutStudent(eventId) {
-            const studentId = document.getElementById('checkin-student-id').value;
+        async function checkOutStudent(eventId, studentId = null) {
+            // If studentId is provided as parameter, use it; otherwise get from input
             if (!studentId) {
-                alert('Please enter a student ID');
-                return;
+                studentId = document.getElementById('checkin-student-id')?.value;
+                if (!studentId) {
+                    alert('Please enter a student ID');
+                    return;
+                }
             }
 
             try {
@@ -873,7 +2495,12 @@
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    alert(data.message || 'Student checked out successfully!');
+                    // Don't show alert if called from button (studentId was provided)
+                    if (!document.getElementById('checkin-student-id')?.value) {
+                        // Silent update if called from button
+                    } else {
+                        alert(data.message || 'Student checked out successfully!');
+                    }
                     loadEventCheckIns();
                 } else {
                     alert('Error: ' + (data.detail || 'Unknown error'));

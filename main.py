@@ -143,6 +143,14 @@ class EventWithCustomData(BaseModel):
 class EventCustomDataUpdate(BaseModel):
     custom_field_values: Dict[str, Any]
 
+# Model for updating an event's base fields
+class EventUpdate(BaseModel):
+    name: Optional[str] = None
+    event_type_id: Optional[int] = None
+    place_id: Optional[int] = None
+    start_date_time: Optional[str] = None
+    end_date_time: Optional[str] = None
+
 # --- API Endpoints ---
 @app.get("/")
 async def read_root():
@@ -1473,6 +1481,84 @@ def update_event_custom_data(event_id: int, custom_data_update: EventCustomDataU
         raise HTTPException(status_code=500, detail=f"MongoDB error: {e}")
 
 
+@app.put("/events/{event_id}", status_code=200)
+def update_event(event_id: int, event_update: EventUpdate):
+    """
+    Updates an event's base fields (name, event_type_id, place_id, dates).
+    Only provided fields will be updated.
+    """
+    cnx = None
+    cursor = None
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        
+        # Check if event exists
+        cursor.execute("SELECT id, Name, EventTypeID, PlaceID, StartDateTime, EndDateTime FROM Event WHERE id = %s;", (event_id,))
+        event = cursor.fetchone()
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        
+        # Build update query dynamically based on provided fields
+        updates = []
+        params = []
+        
+        if event_update.name is not None:
+            updates.append("name = %s")
+            params.append(event_update.name)
+        
+        if event_update.event_type_id is not None:
+            # Validate event type exists
+            cursor.execute("SELECT id FROM EventType WHERE id = %s;", (event_update.event_type_id,))
+            if not cursor.fetchone():
+                raise HTTPException(status_code=404, detail="Event type not found")
+            updates.append("eventTypeID = %s")
+            params.append(event_update.event_type_id)
+        
+        if event_update.place_id is not None:
+            # Validate place exists
+            cursor.execute("SELECT id FROM Place WHERE id = %s;", (event_update.place_id,))
+            if not cursor.fetchone():
+                raise HTTPException(status_code=404, detail="Place not found")
+            updates.append("placeID = %s")
+            params.append(event_update.place_id)
+        
+        if event_update.start_date_time is not None:
+            updates.append("startDateTime = %s")
+            params.append(event_update.start_date_time)
+        
+        if event_update.end_date_time is not None:
+            updates.append("endDateTime = %s")
+            params.append(event_update.end_date_time)
+        
+        if not updates:
+            return {"message": "No fields to update", "event_id": event_id}
+        
+        # Add event_id for WHERE clause
+        params.append(event_id)
+        
+        # Execute update
+        update_query = f"UPDATE Event SET {', '.join(updates)} WHERE id = %s;"
+        cursor.execute(update_query, params)
+        cnx.commit()
+        
+        return {
+            "message": "Event updated successfully",
+            "event_id": event_id,
+            "updated_fields": [u.split(' = ')[0] for u in updates]
+        }
+        
+    except HTTPException:
+        raise
+    except mysql.connector.Error as err:
+        if cnx:
+            cnx.rollback()
+        raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx and cnx.is_connected():
+            cnx.close()
 
 
 # ========== REDIS CHECK-IN ENDPOINTS ==========
