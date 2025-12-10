@@ -18,13 +18,14 @@ from dotenv import load_dotenv
 from mongodb_implement import get_mongo_client, get_mongo_db
 from redis_implement import get_redis_client, get_redis_conn
 
+# Load environment variables FIRST before using them
+load_dotenv("env")
+
 # --- Database Configuration ---
 DB_USER = "root"
 DB_PASSWORD = os.getenv("DB_PASS")
-DB_HOST = "mysql"
+DB_HOST = os.getenv("DB_HOST")
 DB_NAME = "FP_YG_app"
-
-load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # --- Connection Pooling ---
@@ -144,11 +145,14 @@ class EventCustomDataUpdate(BaseModel):
 
 # --- API Endpoints ---
 @app.get("/")
-def read_root():
+async def read_root():
     """
-    Root endpoint with a welcome message.
+    Root endpoint - serves the frontend interface.
     """
-    return {"message": "Welcome to the Youth Group API!"}
+    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    if os.path.exists(html_path):
+        return FileResponse(html_path)
+    return {"message": "Welcome to the Youth Group API! Visit /demo for the frontend."}
 
 @app.get("/people", response_model=list[Person])
 def get_all_people():
@@ -1979,7 +1983,15 @@ def finalize_event_check_ins(event_id: int):
         raise HTTPException(status_code=500, detail=f"Unexpected error in finalize: {type(e).__name__}: {e}")
 
 
-@app.get("/demo", response_class=FileResponse)
+@app.get("/demo")
+async def read_demo():
+    """
+    Serves the demo HTML page.
+    """
+    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    if os.path.exists(html_path):
+        return FileResponse(html_path)
+    raise HTTPException(status_code=404, detail="Frontend HTML file not found")
 async def read_demo():
     """
     Serves the demo HTML page.
