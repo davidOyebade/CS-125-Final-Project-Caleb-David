@@ -29,7 +29,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # --- Connection Pooling ---
 try:
-    print("dbconnection info:", DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)
     db_pool = mysql.connector.pooling.MySQLConnectionPool(
         pool_name="fastapi_pool",
         pool_size=5,
@@ -45,12 +44,25 @@ except mysql.connector.Error as err:
 mongoDBclient = get_mongo_client()
 redisClient = get_redis_client()
 
+
 # --- FastAPI App ---
 app = FastAPI(
     title="Youth Group API",
     description="An API for interacting with the FP_YG_app database.",
     version="1.0.0"
 )
+
+try:
+    from graphql_app import graphql_app, init_graphql
+    # Initialize GraphQL with database connections
+    init_graphql(db_pool, redisClient, mongoDBclient)
+    app.include_router(graphql_app, prefix="/graphql")
+    print("✓ GraphQL endpoint available at /graphql")
+except ImportError as e:
+    print(f"⚠ GraphQL not available - install strawberry-graphql: pip install strawberry-graphql")
+    print(f"  Import error: {e}")
+except Exception as e:
+    print(f"⚠ GraphQL integration error: {e}")
 
 # --- Pydantic Models (for request/response validation) ---
 class Person(BaseModel):
