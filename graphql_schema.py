@@ -33,7 +33,7 @@ def set_database_connections(db_pool_conn, redis_conn, mongo_conn):
     """Set database connections at runtime to avoid circular imports."""
     global db_pool, redisClient, mongoDBclient
     db_pool = db_pool_conn
-    redisClient = redis_conn
+    redisClient = redis_conn;
     mongoDBclient = mongo_conn
 
 

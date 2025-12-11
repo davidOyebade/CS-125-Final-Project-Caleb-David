@@ -2,7 +2,7 @@ import redis
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv("env")
 
 
 redis_client = None

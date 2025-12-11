@@ -13,7 +13,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv("env")
 mongo_client = None
 # MongoDB Connection
 MONGO_URI = os.getenv("MONGO_URI")
