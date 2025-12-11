@@ -1160,7 +1160,7 @@
                 const html = `
                     <div class="card" style="max-width: 800px; margin: 0 auto;">
                         <h3>Create New Event</h3>
-                        <form id="create-event-form" onsubmit="createEvent(event)">
+                        <form id="create-event-form" onsubmit="return createEvent(event)">
                             <div class="form-group">
                                 <label>Event Name *</label>
                                 <input type="text" id="event-name" required placeholder="e.g., Spring Retreat 2025">
@@ -1243,80 +1243,133 @@
 
         // Create event
         async function createEvent(e) {
-            e.preventDefault();
-            const name = document.getElementById('event-name').value;
-            const eventTypeId = parseInt(document.getElementById('event-type-id').value);
-            const placeId = parseInt(document.getElementById('event-place-id').value);
-            const startDateTime = document.getElementById('event-start-datetime').value;
-            const endDateTime = document.getElementById('event-end-datetime').value;
-
-            // Collect custom field values
-            const customFieldInputs = document.querySelectorAll('.custom-field-input');
-            const customFieldValues = {};
-            customFieldInputs.forEach(input => {
-                const fieldName = input.dataset.field;
-                const dataType = input.dataset.type;
-                const value = input.value.trim();
-                if (value) {
-                    if (dataType === 'boolean') {
-                        customFieldValues[fieldName] = value === 'true';
-                    } else if (dataType === 'number') {
-                        customFieldValues[fieldName] = parseFloat(value);
-                    } else {
-                        customFieldValues[fieldName] = value;
-                    }
-                }
-            });
-
-            // Format datetime for API (ISO format)
-            // datetime-local gives format "YYYY-MM-DDTHH:mm", need to convert to ISO
-            let startISO, endISO;
-            try {
-                // Create date objects and convert to ISO string
-                const startDate = new Date(startDateTime);
-                const endDate = new Date(endDateTime);
-                
-                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-                    alert('Invalid date format. Please check your dates.');
-                    return;
-                }
-                
-                startISO = startDate.toISOString();
-                endISO = endDate.toISOString();
-            } catch (dateError) {
-                alert('Error formatting dates: ' + dateError.message);
-                return;
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
             }
-
+            
+            console.log('=== CREATE EVENT FUNCTION CALLED ===');
+            
             try {
+                const nameEl = document.getElementById('event-name');
+                const eventTypeIdEl = document.getElementById('event-type-id');
+                const placeIdEl = document.getElementById('event-place-id');
+                const startDateTimeEl = document.getElementById('event-start-datetime');
+                const endDateTimeEl = document.getElementById('event-end-datetime');
+                
+                if (!nameEl || !eventTypeIdEl || !placeIdEl || !startDateTimeEl || !endDateTimeEl) {
+                    alert('ERROR: Form fields not found! Please refresh the page.');
+                    console.error('Form fields not found');
+                    return false;
+                }
+                
+                const name = nameEl.value.trim();
+                const eventTypeId = parseInt(eventTypeIdEl.value);
+                const placeId = parseInt(placeIdEl.value);
+                const startDateTime = startDateTimeEl.value;
+                const endDateTime = endDateTimeEl.value;
+
+                console.log('Form values:', { name, eventTypeId, placeId, startDateTime, endDateTime });
+
+                // Validate required fields
+                if (!name || !eventTypeId || !placeId || !startDateTime || !endDateTime) {
+                    alert('Please fill in all required fields');
+                    console.error('Validation failed:', { name: !!name, eventTypeId: !!eventTypeId, placeId: !!placeId, startDateTime: !!startDateTime, endDateTime: !!endDateTime });
+                    return false;
+                }
+
+                // Collect custom field values
+                const customFieldInputs = document.querySelectorAll('.custom-field-input');
+                const customFieldValues = {};
+                customFieldInputs.forEach(input => {
+                    const fieldName = input.dataset.field;
+                    const dataType = input.dataset.type;
+                    const value = input.value.trim();
+                    if (value) {
+                        if (dataType === 'boolean') {
+                            customFieldValues[fieldName] = value === 'true';
+                        } else if (dataType === 'number') {
+                            customFieldValues[fieldName] = parseFloat(value);
+                        } else {
+                            customFieldValues[fieldName] = value;
+                        }
+                    }
+                });
+
+                // Format datetime for MySQL (YYYY-MM-DD HH:MM:SS format)
+                // datetime-local gives format "YYYY-MM-DDTHH:mm", need to convert to MySQL format
+                let startISO, endISO;
+                try {
+                    // datetime-local format: "YYYY-MM-DDTHH:mm"
+                    // MySQL format: "YYYY-MM-DD HH:MM:SS"
+                    // Simple conversion: replace 'T' with ' ' and add ':00' for seconds
+                    startISO = startDateTime.replace('T', ' ') + ':00';
+                    endISO = endDateTime.replace('T', ' ') + ':00';
+                    
+                    console.log('Converted dates:', { startISO, endISO });
+                } catch (dateError) {
+                    alert('Error formatting dates: ' + dateError.message);
+                    console.error('Date conversion error:', dateError);
+                    return false;
+                }
+
+                const requestBody = {
+                    name,
+                    event_type_id: eventTypeId,
+                    place_id: placeId,
+                    start_date_time: startISO,
+                    end_date_time: endISO,
+                    custom_field_values: Object.keys(customFieldValues).length > 0 ? customFieldValues : null
+                };
+
+                console.log('Sending request to:', `${API_BASE}/events`);
+                console.log('Request body:', requestBody);
+
                 const response = await fetch(`${API_BASE}/events`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name,
-                        event_type_id: eventTypeId,
-                        place_id: placeId,
-                        start_date_time: startISO,
-                        end_date_time: endISO,
-                        custom_field_values: Object.keys(customFieldValues).length > 0 ? customFieldValues : null
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
-                const data = await response.json();
-                if (response.ok) {
-                    alert(`Event "${data.name}" created successfully with ID ${data.event_id}!`);
-                    document.getElementById('create-event-form').reset();
-                    document.getElementById('custom-fields-container').innerHTML = '<p style="color: #666;">Select an event type to see custom fields</p>';
-                    loadEvents();
-                    switchEventView('list');
-                } else {
-                    const errorMsg = data.detail || data.message || 'Unknown error';
-                    alert('Error: ' + errorMsg);
-                    console.error('Create event error:', data);
+                console.log('Response status:', response.status, response.statusText);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                const responseText = await response.text();
+                console.log('Response text:', responseText);
+
+                if (!response.ok) {
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(responseText);
+                    } catch {
+                        errorData = { detail: `HTTP ${response.status}: ${response.statusText}\nResponse: ${responseText}` };
+                    }
+                    const errorMsg = errorData.detail || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+                    alert('Error creating event: ' + errorMsg);
+                    console.error('Create event error:', errorData);
+                    return false;
                 }
+
+                const data = JSON.parse(responseText);
+                console.log('Event created successfully:', data);
+                alert(`Event "${data.name}" created successfully with ID ${data.event_id}!`);
+                
+                // Reset form
+                const form = document.getElementById('create-event-form');
+                if (form) form.reset();
+                const customFieldsContainer = document.getElementById('custom-fields-container');
+                if (customFieldsContainer) {
+                    customFieldsContainer.innerHTML = '<p style="color: #666;">Select an event type to see custom fields</p>';
+                }
+                
+                // Reload events and switch to list view
+                await loadEvents();
+                switchEventView('list');
+                return false;
             } catch (error) {
                 console.error('Create event error:', error);
                 alert('Error creating event: ' + error.message);
+                return false;
             }
         }
 
@@ -1386,9 +1439,11 @@
             const startDateTime = document.getElementById('edit-event-start-datetime').value;
             const endDateTime = document.getElementById('edit-event-end-datetime').value;
 
-            // Format datetime for API (ISO format)
-            const startISO = new Date(startDateTime).toISOString();
-            const endISO = new Date(endDateTime).toISOString();
+            // Format datetime for MySQL (YYYY-MM-DD HH:MM:SS format)
+            // datetime-local format: "YYYY-MM-DDTHH:mm"
+            // MySQL format: "YYYY-MM-DD HH:MM:SS"
+            const startISO = startDateTime.replace('T', ' ') + ':00';
+            const endISO = endDateTime.replace('T', ' ') + ':00';
 
             try {
                 const response = await fetch(`${API_BASE}/events/${eventId}`, {
@@ -2005,7 +2060,11 @@
                 }
 
                 try {
-                    const response = await fetch(`${API_BASE}/people/search?q=${encodeURIComponent(query)}`);
+                    // The API expects 'name' parameter, not 'q'
+                    const response = await fetch(`${API_BASE}/people/search?name=${encodeURIComponent(query)}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
                     const people = await response.json();
 
                     const html = `
@@ -2022,6 +2081,7 @@
                     document.getElementById('people-grid').innerHTML = html;
                 } catch (error) {
                     console.error('Search error:', error);
+                    document.getElementById('people-grid').innerHTML = `<div class="error">Error searching: ${error.message}</div>`;
                 }
             }
         }
@@ -2052,12 +2112,15 @@
                         <h4 style="margin-top: 20px;">Small Groups (${smallgroups.length})</h4>
                         ${smallgroups.length > 0 ? `
                             <div class="grid">
-                                ${smallgroups.map(group => `
+                                ${smallgroups.map(group => {
+                                    const groupName = group.name || group.Name || 'Unknown';
+                                    return `
                                     <div class="card">
-                                        <p><strong>${group.name || group.Name}</strong></p>
+                                        <p><strong>${groupName}</strong></p>
                                         <p>ID: ${group.id}</p>
                                     </div>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                             </div>
                         ` : '<p>Not in any small groups</p>'}
                     </div>
@@ -2082,16 +2145,19 @@
 
                 const html = `
                     <div class="grid">
-                        ${groups.map(group => `
+                        ${groups.map(group => {
+                            const groupName = group.name || group.Name || 'Unknown';
+                            return `
                             <div class="card">
-                                <h3>${group.Name}</h3>
+                                <h3>${groupName}</h3>
                                 <p><strong>ID:</strong> ${group.id}</p>
                                 <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                                    <button class="btn btn-small" onclick="viewSmallGroupRoster(${group.id}, '${group.Name}')">View Roster</button>
-                                    <button class="btn btn-small" onclick="manageSmallGroupMembers(${group.id}, '${group.Name}')">Manage Members</button>
+                                    <button class="btn btn-small" onclick="viewSmallGroupRoster(${group.id}, '${groupName}')">View Roster</button>
+                                    <button class="btn btn-small" onclick="manageSmallGroupMembers(${group.id}, '${groupName}')">Manage Members</button>
                                 </div>
                             </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 `;
                 document.getElementById('smallgroups-content').innerHTML = html;
