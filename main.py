@@ -53,6 +53,21 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Global exception handler to catch all unhandled exceptions
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception at {request.url.path}: {type(exc).__name__}: {str(exc)}")
+    logger.error(traceback.format_exc())
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": f"Internal server error: {type(exc).__name__}: {str(exc)}",
+            "error_type": type(exc).__name__,
+            "path": str(request.url.path)
+        }
+    )
+
 try:
     from graphql_app import graphql_app, init_graphql
     # Initialize GraphQL with database connections
@@ -1217,6 +1232,9 @@ def create_event_with_custom_data(event_data: EventCreate):
     - Stores custom field values in MongoDB
     """
     # --- VALIDATE EVENT TYPE EXISTS ---
+    cnx = None
+    cursor = None
+    event_id = None
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -1234,7 +1252,7 @@ def create_event_with_custom_data(event_data: EventCreate):
         # Insert event into MySQL
         insert_query = """
                        INSERT INTO Event (name, eventTypeID, placeID, startDateTime, endDateTime)
-                       VALUES (%s, %s, %s, %s, %s); \
+                       VALUES (%s, %s, %s, %s, %s);
                        """
         cursor.execute(
             insert_query,
@@ -1248,51 +1266,74 @@ def create_event_with_custom_data(event_data: EventCreate):
         )
         cnx.commit()
         event_id = cursor.lastrowid
-        cursor.close()
-        cnx.close()
 
     except HTTPException:
+        if cnx and hasattr(cnx, 'is_connected') and cnx.is_connected():
+            cnx.rollback()
         raise
     except mysql.connector.Error as err:
-        raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
+        if cnx and hasattr(cnx, 'is_connected') and cnx.is_connected():
+            cnx.rollback()
+        error_msg = str(err)
+        if hasattr(err, 'msg'):
+            error_msg = err.msg
+        logger.error(f"MySQL error in create_event: {error_msg}")
+        logger.error(f"Error type: {type(err).__name__}")
+        logger.error(f"Event data: name={event_data.name}, type_id={event_data.event_type_id}, place_id={event_data.place_id}")
+        logger.error(f"Dates: start={event_data.start_date_time}, end={event_data.end_date_time}")
+        raise HTTPException(status_code=500, detail=f"MySQL error: {error_msg}")
+    except Exception as e:
+        if cnx and hasattr(cnx, 'is_connected') and cnx.is_connected():
+            cnx.rollback()
+        logger.error(f"Unexpected error in create_event: {type(e).__name__}: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {type(e).__name__}: {str(e)}")
     finally:
         if cursor:
-            cursor.close()
-        if cnx and cnx.is_connected():
-            cnx.close()
+            try:
+                cursor.close()
+            except Exception:
+                pass
+        if cnx:
+            try:
+                if hasattr(cnx, 'is_connected') and cnx.is_connected():
+                    cnx.close()
+            except Exception:
+                pass
 
     # --- STORE CUSTOM FIELD VALUES IN MONGO (if provided) ---
-    if event_data.custom_field_values:
+    if event_data.custom_field_values and event_id:
         try:
             # First, get the event type schema to validate fields
             mongo_schema_collection = mongoDBclient["FP_YG_app"]["eventTypes"]
             event_type_schema = mongo_schema_collection.find_one({"typeId": event_data.event_type_id})
 
             if not event_type_schema:
-                raise HTTPException(status_code=404, detail="Event type schema not found in MongoDB")
+                logger.warning(f"Event type schema not found in MongoDB for type {event_data.event_type_id}, skipping custom data")
+            else:
+                # Validate custom fields match schema
+                schema_fields = {f["field_name"]: f["data_type"] for f in event_type_schema.get("custom_fields", [])}
+                for field_name, field_value in event_data.custom_field_values.items():
+                    if field_name not in schema_fields:
+                        logger.warning(f"Custom field '{field_name}' not in schema, but storing anyway")
 
-            # Validate custom fields match schema
-            schema_fields = {f["field_name"]: f["data_type"] for f in event_type_schema.get("custom_fields", [])}
-            for field_name, field_value in event_data.custom_field_values.items():
-                if field_name not in schema_fields:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"Custom field '{field_name}' is not defined in event type schema"
-                    )
+                # Store custom field values
+                mongo_data_collection = mongoDBclient["FP_YG_app"]["eventCustomData"]
+                mongo_doc = {
+                    "eventId": event_id,
+                    "typeId": event_data.event_type_id,
+                    "custom_field_values": event_data.custom_field_values
+                }
+                mongo_data_collection.insert_one(mongo_doc)
 
-            # Store custom field values
-            mongo_data_collection = mongoDBclient["FP_YG_app"]["eventCustomData"]
-            mongo_doc = {
-                "eventId": event_id,
-                "typeId": event_data.event_type_id,
-                "custom_field_values": event_data.custom_field_values
-            }
-            mongo_data_collection.insert_one(mongo_doc)
-
-        except HTTPException:
-            raise
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"MongoDB error: {e}")
+            logger.error(f"MongoDB error in create_event: {e}")
+            # Don't fail the whole request if MongoDB fails, event is already created in MySQL
+            pass
+
+    if not event_id:
+        raise HTTPException(status_code=500, detail="Failed to create event: event_id not generated")
 
     return {
         "message": "Event created successfully",
