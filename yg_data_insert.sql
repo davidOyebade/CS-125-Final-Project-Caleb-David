@@ -2,7 +2,7 @@
 --  INSERT DATA FOR FP_YG_APP
 --  Updated to include EventType + TypeID
 -- ============================================
-
+USE FP_YG_app;
 -- -------------------------
 -- PERSON
 -- -------------------------
@@ -125,7 +125,7 @@ INSERT INTO EventType (Name) VALUES
 -- EVENTS (UPDATED WITH TypeID)
 -- -------------------------
 -- Insert Events (10 total, matching MongoDB)
-INSERT INTO Event (Name, TypeID, PlaceID, StartDateTime, EndDateTime) VALUES
+INSERT INTO Event (Name, EventTypeID, PlaceID, StartDateTime, EndDateTime) VALUES
 -- 1
 ('Weekly Youth Night - Jan', 1, 1, '2025-01-10 18:00:00', '2025-01-10 21:00:00'),
 -- 2
