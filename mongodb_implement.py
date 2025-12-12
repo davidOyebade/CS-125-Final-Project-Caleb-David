@@ -9,6 +9,7 @@ This script:
 2. Populates collections with sample data matching the MySQL schema
 """
 
+
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import os
@@ -334,5 +335,5 @@ print("=" * 60)
 print("\nCollections created:")
 print("  1. eventTypes - Event type schemas with custom field definitions")
 print("  2. eventCustomData - Custom field values for event instances")
-print("\nYou can now use these collections with api_implement.py")
+print("\nYou can now use these collections with main.py")
 print("=" * 60 + "\n")
