@@ -26,6 +26,7 @@ DB_USER = "root"
 DB_PASSWORD = os.getenv("DB_PASS")
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = "FP_YG_app"
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # --- Connection Pooling ---
@@ -68,6 +69,8 @@ async def global_exception_handler(request: Request, exc: Exception):
         }
     )
 
+
+#connection to graphql
 try:
     from graphql_app import graphql_app, init_graphql
     # Initialize GraphQL with database connections
@@ -166,6 +169,7 @@ class EventUpdate(BaseModel):
     start_date_time: Optional[str] = None
     end_date_time: Optional[str] = None
 
+
 # --- API Endpoints ---
 @app.get("/")
 async def read_root():
@@ -176,6 +180,7 @@ async def read_root():
     if os.path.exists(html_path):
         return FileResponse(html_path)
     return {"message": "Welcome to the Youth Group API! Visit /demo for the frontend."}
+
 
 @app.get("/people", response_model=list[Person])
 def get_all_people():
@@ -229,7 +234,7 @@ def search_people_by_name(name: str):
 @app.get("/people/{person_id}", response_model=Person)
 def get_person_by_id(person_id: int):
     """
-    Retrieves a specific customer by their ID.
+    Retrieves a specific person by their ID.
     """
     try:
         cnx = db_pool.get_connection()
@@ -247,8 +252,12 @@ def get_person_by_id(person_id: int):
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
+
 @app.get("/people/{person_id}/smallgroups")
 def get_smallgroups_for_person(person_id: int):
+    """
+       Retrieves a specific person's small groups
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -267,6 +276,9 @@ def get_smallgroups_for_person(person_id: int):
 
 @app.get("/parents", response_model=list[Parent])
 def get_all_parents():
+    """
+       Gets all parents.
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -315,6 +327,10 @@ def search_parents_by_name(name: str):
 
 @app.get("/parents/{parent_id}", response_model=Parent)
 def get_parent_by_id(parent_id: int):
+    """
+       Retrieves a specific parent by their ID.
+       """
+
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -331,6 +347,7 @@ def get_parent_by_id(parent_id: int):
     finally:
         cursor.close()
         cnx.close()
+
 @app.get("/parents/{parent_id}/students", response_model=list[Student])
 def get_students_of_parent(parent_id: int):
     """
@@ -436,6 +453,7 @@ def get_students_by_grade(student_grade: int):
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
+
 @app.get("/students/{student_id}", response_model=Student)
 def get_student_by_id(student_id: int):
     """
@@ -460,6 +478,9 @@ def get_student_by_id(student_id: int):
 
 @app.get("/students/{student_id}/parents", response_model=list[Parent])
 def get_parents_of_student(student_id: int):
+    """
+       Retrieves the parents of a specific student
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -481,7 +502,7 @@ def get_parents_of_student(student_id: int):
 @app.get("/events", response_model=list[Event])
 def get_all_events():
     """
-    Retrieves a list of all products.
+    Retrieves a list of all events
     """
     try:
         cnx = db_pool.get_connection()
@@ -525,8 +546,12 @@ def search_events_by_name(name: str):
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
+
 @app.get("/events/{event_id}", response_model=Event)
 def get_event_by_id(event_id: int):
+    """
+       Retrieves a specific event by its ID.
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -569,6 +594,7 @@ def assign_to_event(event_id: int, data: ShiftAssign):
     finally:
         cursor.close()
         cnx.close()
+
 @app.get("/events/{event_id}/workers")
 def get_event_workers(event_id: int):
     """
@@ -626,6 +652,9 @@ def get_event_workers(event_id: int):
 
 @app.get("/events/{event_id}/roster")
 def get_event_roster(event_id: int):
+    """
+       Retrieves the registration for a specific event.
+    """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -642,10 +671,401 @@ def get_event_roster(event_id: int):
         cursor.close()
         cnx.close()
 
+
+@app.post("/events", status_code=201)
+def create_event_with_custom_data(event_data: EventCreate):
+    """
+    Creates a new event with custom field values.
+    - Stores base event in MySQL
+    - Stores custom field values in MongoDB
+    """
+    # --- VALIDATE EVENT TYPE EXISTS ---
+    cnx = None
+    cursor = None
+    event_id = None
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("SELECT id FROM EventType WHERE id = %s;", (event_data.event_type_id,))
+        event_type = cursor.fetchone()
+        if not event_type:
+            raise HTTPException(status_code=404, detail="Event type not found")
+
+        # Validate place exists
+        cursor.execute("SELECT id FROM Place WHERE id = %s;", (event_data.place_id,))
+        place = cursor.fetchone()
+        if not place:
+            raise HTTPException(status_code=404, detail="Place not found")
+
+        # Insert event into MySQL
+        insert_query = """
+                       INSERT INTO Event (name, eventTypeID, placeID, startDateTime, endDateTime)
+                       VALUES (%s, %s, %s, %s, %s);
+                       """
+        cursor.execute(
+            insert_query,
+            (
+                event_data.name,
+                event_data.event_type_id,
+                event_data.place_id,
+                event_data.start_date_time,
+                event_data.end_date_time
+            )
+        )
+        cnx.commit()
+        event_id = cursor.lastrowid
+
+    except HTTPException:
+        if cnx and hasattr(cnx, 'is_connected') and cnx.is_connected():
+            cnx.rollback()
+        raise
+    except mysql.connector.Error as err:
+        if cnx and hasattr(cnx, 'is_connected') and cnx.is_connected():
+            cnx.rollback()
+        error_msg = str(err)
+        if hasattr(err, 'msg'):
+            error_msg = err.msg
+        logger.error(f"MySQL error in create_event: {error_msg}")
+        logger.error(f"Error type: {type(err).__name__}")
+        logger.error(
+            f"Event data: name={event_data.name}, type_id={event_data.event_type_id}, place_id={event_data.place_id}")
+        logger.error(f"Dates: start={event_data.start_date_time}, end={event_data.end_date_time}")
+        raise HTTPException(status_code=500, detail=f"MySQL error: {error_msg}")
+    except Exception as e:
+        if cnx and hasattr(cnx, 'is_connected') and cnx.is_connected():
+            cnx.rollback()
+        logger.error(f"Unexpected error in create_event: {type(e).__name__}: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {type(e).__name__}: {str(e)}")
+    finally:
+        if cursor:
+            try:
+                cursor.close()
+            except Exception:
+                pass
+        if cnx:
+            try:
+                if hasattr(cnx, 'is_connected') and cnx.is_connected():
+                    cnx.close()
+            except Exception:
+                pass
+
+    # --- STORE CUSTOM FIELD VALUES IN MONGO (if provided) ---
+    if event_data.custom_field_values and event_id:
+        try:
+            # First, get the event type schema to validate fields
+            mongo_schema_collection = mongoDBclient["FP_YG_app"]["eventTypes"]
+            event_type_schema = mongo_schema_collection.find_one({"typeId": event_data.event_type_id})
+
+            if not event_type_schema:
+                logger.warning(
+                    f"Event type schema not found in MongoDB for type {event_data.event_type_id}, skipping custom data")
+            else:
+                # Validate custom fields match schema
+                schema_fields = {f["field_name"]: f["data_type"] for f in event_type_schema.get("custom_fields", [])}
+                for field_name, field_value in event_data.custom_field_values.items():
+                    if field_name not in schema_fields:
+                        logger.warning(f"Custom field '{field_name}' not in schema, but storing anyway")
+
+                # Store custom field values
+                mongo_data_collection = mongoDBclient["FP_YG_app"]["eventCustomData"]
+                mongo_doc = {
+                    "eventId": event_id,
+                    "typeId": event_data.event_type_id,
+                    "custom_field_values": event_data.custom_field_values
+                }
+                mongo_data_collection.insert_one(mongo_doc)
+
+        except Exception as e:
+            logger.error(f"MongoDB error in create_event: {e}")
+            # Don't fail the whole request if MongoDB fails, event is already created in MySQL
+            pass
+
+    if not event_id:
+        raise HTTPException(status_code=500, detail="Failed to create event: event_id not generated")
+
+    return {
+        "message": "Event created successfully",
+        "event_id": event_id,
+        "name": event_data.name,
+        "has_custom_data": event_data.custom_field_values is not None
+    }
+
+
+@app.get("/events/{event_id}/view-custom", response_model=EventWithCustomData)
+def get_event_with_custom_data(event_id: int):
+    """
+    Retrieves an event with its custom field values from both MySQL and MongoDB.
+    """
+    # --- GET BASE EVENT FROM MYSQL ---
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        query = """
+                SELECT id, name, eventTypeID, placeID, StartDateTime, EndDateTime
+                FROM Event
+                WHERE id = %s; \
+                """
+        cursor.execute(query, (event_id,))
+        event = cursor.fetchone()
+
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+
+    except HTTPException:
+        raise
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
+
+    finally:
+        try:
+            if cursor is not None:
+                cursor.close()
+        except:
+            pass
+
+        try:
+            if cnx is not None:
+                cnx.close()
+        except:
+            pass
+
+    # --- GET CUSTOM FIELD VALUES FROM MONGO ---
+    custom_field_values = None
+    try:
+        mongo_collection = mongoDBclient["FP_YG_app"]["eventCustomData"]
+        custom_data = mongo_collection.find_one({"eventId": event_id})
+        if custom_data:
+            custom_field_values = custom_data.get("custom_field_values")
+    except Exception as e:
+        # Don't fail if MongoDB lookup fails, just return None for custom data
+        pass
+
+    # Format datetime for response
+    start_dt = event["StartDateTime"].isoformat() if event["StartDateTime"] else None
+    end_dt = event["EndDateTime"].isoformat() if event["EndDateTime"] else None
+
+    return EventWithCustomData(
+        id=event["id"],
+        name=event["name"],
+        event_type_id=event["eventTypeID"],
+        place_id=event["placeID"],
+        start_date_time=start_dt,
+        end_date_time=end_dt,
+        custom_field_values=custom_field_values
+    )
+
+
+@app.put("/events/{event_id}/custom-data", status_code=200)
+def update_event_custom_data(event_id: int, custom_data_update: EventCustomDataUpdate):
+    """
+    Updates the custom field values for an existing event.
+    - Validates event exists
+    - Validates custom fields match the event type schema
+    - Updates or creates custom field values in MongoDB
+    """
+    # --- VALIDATE EVENT EXISTS AND GET EVENT TYPE ---
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+                SELECT id, Name, EventTypeID
+                FROM Event \
+                WHERE id = %s; \
+                """
+        cursor.execute(query, (event_id,))
+        event = cursor.fetchone()
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        event_type_id = event["EventTypeID"]
+        cursor.close()
+        cnx.close()
+    except HTTPException:
+        raise
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx and cnx.is_connected():
+            cnx.close()
+
+    # --- VALIDATE CUSTOM FIELDS MATCH EVENT TYPE SCHEMA ---
+    try:
+        mongo_schema_collection = mongoDBclient["FP_YG_app"]["eventTypes"]
+        event_type_schema = mongo_schema_collection.find_one({"typeId": event_type_id})
+
+        if not event_type_schema:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Event type schema not found for event type ID {event_type_id}"
+            )
+
+        # Validate custom fields match schema
+        schema_fields = {f["field_name"]: f["data_type"] for f in event_type_schema.get("custom_fields", [])}
+
+        if not schema_fields:
+            raise HTTPException(
+                status_code=400,
+                detail="This event type does not have any custom fields defined"
+            )
+
+        # Validate all provided fields exist in schema
+        for field_name, field_value in custom_data_update.custom_field_values.items():
+            if field_name not in schema_fields:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Custom field '{field_name}' is not defined in event type schema. "
+                           f"Valid fields: {list(schema_fields.keys())}"
+                )
+
+            # Basic type validation
+            expected_type = schema_fields[field_name]
+            if expected_type == "boolean" and not isinstance(field_value, bool):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Field '{field_name}' must be a boolean, got {type(field_value).__name__}"
+                )
+            elif expected_type == "number" and not isinstance(field_value, (int, float)):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Field '{field_name}' must be a number, got {type(field_value).__name__}"
+                )
+            elif expected_type == "text" and not isinstance(field_value, str):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Field '{field_name}' must be text (string), got {type(field_value).__name__}"
+                )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"MongoDB validation error: {e}")
+
+    # --- UPDATE OR CREATE CUSTOM DATA IN MONGO ---
+    try:
+        mongo_data_collection = mongoDBclient["FP_YG_app"]["eventCustomData"]
+
+        # Check if custom data already exists
+        existing_data = mongo_data_collection.find_one({"eventId": event_id})
+
+        if existing_data:
+            # Update existing document
+            mongo_data_collection.update_one(
+                {"eventId": event_id},
+                {"$set": {"custom_field_values": custom_data_update.custom_field_values}}
+            )
+            action = "updated"
+        else:
+            # Create new document
+            mongo_doc = {
+                "eventId": event_id,
+                "typeId": event_type_id,
+                "custom_field_values": custom_data_update.custom_field_values
+            }
+            mongo_data_collection.insert_one(mongo_doc)
+            action = "created"
+
+        return {
+            "message": f"Event custom data {action} successfully",
+            "event_id": event_id,
+            "event_name": event["Name"],
+            "event_type_id": event_type_id,
+            "custom_field_values": custom_data_update.custom_field_values,
+            "action": action
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"MongoDB error: {e}")
+
+
+@app.put("/events/{event_id}", status_code=200)
+def update_event(event_id: int, event_update: EventUpdate):
+    """
+    Updates an event's base fields (name, event_type_id, place_id, dates).
+    Only provided fields will be updated.
+    """
+    cnx = None
+    cursor = None
+    try:
+        cnx = db_pool.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+
+        # Check if event exists
+        cursor.execute("SELECT id, Name, EventTypeID, PlaceID, StartDateTime, EndDateTime FROM Event WHERE id = %s;",
+                       (event_id,))
+        event = cursor.fetchone()
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+
+        # Build update query dynamically based on provided fields
+        updates = []
+        params = []
+
+        if event_update.name is not None:
+            updates.append("name = %s")
+            params.append(event_update.name)
+
+        if event_update.event_type_id is not None:
+            # Validate event type exists
+            cursor.execute("SELECT id FROM EventType WHERE id = %s;", (event_update.event_type_id,))
+            if not cursor.fetchone():
+                raise HTTPException(status_code=404, detail="Event type not found")
+            updates.append("eventTypeID = %s")
+            params.append(event_update.event_type_id)
+
+        if event_update.place_id is not None:
+            # Validate place exists
+            cursor.execute("SELECT id FROM Place WHERE id = %s;", (event_update.place_id,))
+            if not cursor.fetchone():
+                raise HTTPException(status_code=404, detail="Place not found")
+            updates.append("placeID = %s")
+            params.append(event_update.place_id)
+
+        if event_update.start_date_time is not None:
+            updates.append("startDateTime = %s")
+            params.append(event_update.start_date_time)
+
+        if event_update.end_date_time is not None:
+            updates.append("endDateTime = %s")
+            params.append(event_update.end_date_time)
+
+        if not updates:
+            return {"message": "No fields to update", "event_id": event_id}
+
+        # Add event_id for WHERE clause
+        params.append(event_id)
+
+        # Execute update
+        update_query = f"UPDATE Event SET {', '.join(updates)} WHERE id = %s;"
+        cursor.execute(update_query, params)
+        cnx.commit()
+
+        return {
+            "message": "Event updated successfully",
+            "event_id": event_id,
+            "updated_fields": [u.split(' = ')[0] for u in updates]
+        }
+
+    except HTTPException:
+        raise
+    except mysql.connector.Error as err:
+        if cnx:
+            cnx.rollback()
+        raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx and cnx.is_connected():
+            cnx.close()
+
 @app.get("/smallgroups", response_model=list[SmallGroup])
 def get_all_smallgroups():
     """
-    Retrieves a list of all products.
+    Retrieves a list of all small groups
     """
     try:
         cnx = db_pool.get_connection()
@@ -691,6 +1111,9 @@ def search_smallgroups_by_name(name: str):
             cnx.close()
 @app.get("/smallgroups/{smallgroup_id}", response_model=SmallGroup)
 def get_smallgroup_by_id(smallgroup_id: int):
+    """
+       Retrieves a specific small group by their ID.
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -707,8 +1130,12 @@ def get_smallgroup_by_id(smallgroup_id: int):
         if 'cnx' in locals() and cnx.is_connected():
             cursor.close()
             cnx.close()
+
 @app.get("/smallgroups/{group_id}/roster")
 def get_small_group_roster(group_id: int):
+    """
+       Retrieves the roster for a small group
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -728,6 +1155,9 @@ def get_small_group_roster(group_id: int):
 
 @app.post("/smallgroups/{group_id}/add/{person_id}")
 def add_person_to_small_group(group_id: int, person_id: int):
+    """
+       Adds a person to a small group
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor()
@@ -746,6 +1176,9 @@ def add_person_to_small_group(group_id: int, person_id: int):
 
 @app.delete("/smallgroups/{group_id}/remove/{person_id}")
 def remove_person_from_small_group(group_id: int, person_id: int):
+    """
+       Removes a person from a small group
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor()
@@ -759,8 +1192,12 @@ def remove_person_from_small_group(group_id: int, person_id: int):
     finally:
         cursor.close()
         cnx.close()
+
 @app.get("/volunteers", response_model=list[VolunteerOutput])
 def get_volunteers():
+    """
+       Retrieves the list of all volunteers
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -772,6 +1209,7 @@ def get_volunteers():
     finally:
         cursor.close()
         cnx.close()
+
 @app.get("/volunteers/search", response_model=list[VolunteerOutput])
 def search_volunteers_by_name(name: str):
     """
@@ -930,6 +1368,9 @@ def search_leaders_by_name(name: str):
 
 @app.get("/leaders/{leader_id}", response_model=LeaderOutput)
 def get_leader_by_id(leader_id: int):
+    """
+       Retrieves a specific leader by their ID.
+       """
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
@@ -1117,7 +1558,7 @@ def get_checked_in_for_event_type(type_id: int):
         cursor.execute("""
             SELECT id, name
             FROM Event
-            WHERE TypeID = %s;
+            WHERE EventTypeID = %s;
         """, (type_id,))
         events = cursor.fetchall()
 
@@ -1222,384 +1663,6 @@ def get_checked_in_for_event_type(type_id: int):
         "total_checked_in": len(all_checked_in_ids),
         "events": result
     }
-
-
-@app.post("/events", status_code=201)
-def create_event_with_custom_data(event_data: EventCreate):
-    """
-    Creates a new event with custom field values.
-    - Stores base event in MySQL
-    - Stores custom field values in MongoDB
-    """
-    # --- VALIDATE EVENT TYPE EXISTS ---
-    cnx = None
-    cursor = None
-    event_id = None
-    try:
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT id FROM EventType WHERE id = %s;", (event_data.event_type_id,))
-        event_type = cursor.fetchone()
-        if not event_type:
-            raise HTTPException(status_code=404, detail="Event type not found")
-
-        # Validate place exists
-        cursor.execute("SELECT id FROM Place WHERE id = %s;", (event_data.place_id,))
-        place = cursor.fetchone()
-        if not place:
-            raise HTTPException(status_code=404, detail="Place not found")
-
-        # Insert event into MySQL
-        insert_query = """
-                       INSERT INTO Event (name, eventTypeID, placeID, startDateTime, endDateTime)
-                       VALUES (%s, %s, %s, %s, %s);
-                       """
-        cursor.execute(
-            insert_query,
-            (
-                event_data.name,
-                event_data.event_type_id,
-                event_data.place_id,
-                event_data.start_date_time,
-                event_data.end_date_time
-            )
-        )
-        cnx.commit()
-        event_id = cursor.lastrowid
-
-    except HTTPException:
-        if cnx and hasattr(cnx, 'is_connected') and cnx.is_connected():
-            cnx.rollback()
-        raise
-    except mysql.connector.Error as err:
-        if cnx and hasattr(cnx, 'is_connected') and cnx.is_connected():
-            cnx.rollback()
-        error_msg = str(err)
-        if hasattr(err, 'msg'):
-            error_msg = err.msg
-        logger.error(f"MySQL error in create_event: {error_msg}")
-        logger.error(f"Error type: {type(err).__name__}")
-        logger.error(f"Event data: name={event_data.name}, type_id={event_data.event_type_id}, place_id={event_data.place_id}")
-        logger.error(f"Dates: start={event_data.start_date_time}, end={event_data.end_date_time}")
-        raise HTTPException(status_code=500, detail=f"MySQL error: {error_msg}")
-    except Exception as e:
-        if cnx and hasattr(cnx, 'is_connected') and cnx.is_connected():
-            cnx.rollback()
-        logger.error(f"Unexpected error in create_event: {type(e).__name__}: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {type(e).__name__}: {str(e)}")
-    finally:
-        if cursor:
-            try:
-                cursor.close()
-            except Exception:
-                pass
-        if cnx:
-            try:
-                if hasattr(cnx, 'is_connected') and cnx.is_connected():
-                    cnx.close()
-            except Exception:
-                pass
-
-    # --- STORE CUSTOM FIELD VALUES IN MONGO (if provided) ---
-    if event_data.custom_field_values and event_id:
-        try:
-            # First, get the event type schema to validate fields
-            mongo_schema_collection = mongoDBclient["FP_YG_app"]["eventTypes"]
-            event_type_schema = mongo_schema_collection.find_one({"typeId": event_data.event_type_id})
-
-            if not event_type_schema:
-                logger.warning(f"Event type schema not found in MongoDB for type {event_data.event_type_id}, skipping custom data")
-            else:
-                # Validate custom fields match schema
-                schema_fields = {f["field_name"]: f["data_type"] for f in event_type_schema.get("custom_fields", [])}
-                for field_name, field_value in event_data.custom_field_values.items():
-                    if field_name not in schema_fields:
-                        logger.warning(f"Custom field '{field_name}' not in schema, but storing anyway")
-
-                # Store custom field values
-                mongo_data_collection = mongoDBclient["FP_YG_app"]["eventCustomData"]
-                mongo_doc = {
-                    "eventId": event_id,
-                    "typeId": event_data.event_type_id,
-                    "custom_field_values": event_data.custom_field_values
-                }
-                mongo_data_collection.insert_one(mongo_doc)
-
-        except Exception as e:
-            logger.error(f"MongoDB error in create_event: {e}")
-            # Don't fail the whole request if MongoDB fails, event is already created in MySQL
-            pass
-
-    if not event_id:
-        raise HTTPException(status_code=500, detail="Failed to create event: event_id not generated")
-
-    return {
-        "message": "Event created successfully",
-        "event_id": event_id,
-        "name": event_data.name,
-        "has_custom_data": event_data.custom_field_values is not None
-    }
-
-
-@app.get("/events/{event_id}", response_model=EventWithCustomData)
-def get_event_with_custom_data(event_id: int):
-    """
-    Retrieves an event with its custom field values from both MySQL and MongoDB.
-    """
-    # --- GET BASE EVENT FROM MYSQL ---
-    try:
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-        query = """
-                SELECT id, name, eventTypeID, placeID, startDateTime, endDateTime
-                FROM Event \
-                WHERE id = %s; \
-                """
-        cursor.execute(query, (event_id,))
-        event = cursor.fetchone()
-        if not event:
-            raise HTTPException(status_code=404, detail="Event not found")
-        cursor.close()
-        cnx.close()
-    except HTTPException:
-        raise
-    except mysql.connector.Error as err:
-        raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
-    finally:
-        if cursor:
-            cursor.close()
-        if cnx and cnx.is_connected():
-            cnx.close()
-
-    # --- GET CUSTOM FIELD VALUES FROM MONGO ---
-    custom_field_values = None
-    try:
-        mongo_collection = mongoDBclient["FP_YG_app"]["eventCustomData"]
-        custom_data = mongo_collection.find_one({"eventId": event_id})
-        if custom_data:
-            custom_field_values = custom_data.get("custom_field_values")
-    except Exception as e:
-        # Don't fail if MongoDB lookup fails, just return None for custom data
-        pass
-
-    # Format datetime for response
-    start_dt = event["StartDateTime"].isoformat() if event["StartDateTime"] else None
-    end_dt = event["EndDateTime"].isoformat() if event["EndDateTime"] else None
-
-    return EventWithCustomData(
-        id=event["id"],
-        name=event["Name"],
-        event_type_id=event["EventTypeID"],
-        place_id=event["PlaceID"],
-        start_date_time=start_dt,
-        end_date_time=end_dt,
-        custom_field_values=custom_field_values
-    )
-
-
-@app.put("/events/{event_id}/custom-data", status_code=200)
-def update_event_custom_data(event_id: int, custom_data_update: EventCustomDataUpdate):
-    """
-    Updates the custom field values for an existing event.
-    - Validates event exists
-    - Validates custom fields match the event type schema
-    - Updates or creates custom field values in MongoDB
-    """
-    # --- VALIDATE EVENT EXISTS AND GET EVENT TYPE ---
-    try:
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-        query = """
-                SELECT id, Name, EventTypeID
-                FROM Event \
-                WHERE id = %s; \
-                """
-        cursor.execute(query, (event_id,))
-        event = cursor.fetchone()
-        if not event:
-            raise HTTPException(status_code=404, detail="Event not found")
-        event_type_id = event["EventTypeID"]
-        cursor.close()
-        cnx.close()
-    except HTTPException:
-        raise
-    except mysql.connector.Error as err:
-        raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
-    finally:
-        if cursor:
-            cursor.close()
-        if cnx and cnx.is_connected():
-            cnx.close()
-
-    # --- VALIDATE CUSTOM FIELDS MATCH EVENT TYPE SCHEMA ---
-    try:
-        mongo_schema_collection = mongoDBclient["FP_YG_app"]["eventTypes"]
-        event_type_schema = mongo_schema_collection.find_one({"typeId": event_type_id})
-
-        if not event_type_schema:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Event type schema not found for event type ID {event_type_id}"
-            )
-
-        # Validate custom fields match schema
-        schema_fields = {f["field_name"]: f["data_type"] for f in event_type_schema.get("custom_fields", [])}
-
-        if not schema_fields:
-            raise HTTPException(
-                status_code=400,
-                detail="This event type does not have any custom fields defined"
-            )
-
-        # Validate all provided fields exist in schema
-        for field_name, field_value in custom_data_update.custom_field_values.items():
-            if field_name not in schema_fields:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Custom field '{field_name}' is not defined in event type schema. "
-                           f"Valid fields: {list(schema_fields.keys())}"
-                )
-
-            # Basic type validation
-            expected_type = schema_fields[field_name]
-            if expected_type == "boolean" and not isinstance(field_value, bool):
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Field '{field_name}' must be a boolean, got {type(field_value).__name__}"
-                )
-            elif expected_type == "number" and not isinstance(field_value, (int, float)):
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Field '{field_name}' must be a number, got {type(field_value).__name__}"
-                )
-            elif expected_type == "text" and not isinstance(field_value, str):
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Field '{field_name}' must be text (string), got {type(field_value).__name__}"
-                )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"MongoDB validation error: {e}")
-
-    # --- UPDATE OR CREATE CUSTOM DATA IN MONGO ---
-    try:
-        mongo_data_collection = mongoDBclient["FP_YG_app"]["eventCustomData"]
-
-        # Check if custom data already exists
-        existing_data = mongo_data_collection.find_one({"eventId": event_id})
-
-        if existing_data:
-            # Update existing document
-            mongo_data_collection.update_one(
-                {"eventId": event_id},
-                {"$set": {"custom_field_values": custom_data_update.custom_field_values}}
-            )
-            action = "updated"
-        else:
-            # Create new document
-            mongo_doc = {
-                "eventId": event_id,
-                "typeId": event_type_id,
-                "custom_field_values": custom_data_update.custom_field_values
-            }
-            mongo_data_collection.insert_one(mongo_doc)
-            action = "created"
-
-        return {
-            "message": f"Event custom data {action} successfully",
-            "event_id": event_id,
-            "event_name": event["Name"],
-            "event_type_id": event_type_id,
-            "custom_field_values": custom_data_update.custom_field_values,
-            "action": action
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"MongoDB error: {e}")
-
-
-@app.put("/events/{event_id}", status_code=200)
-def update_event(event_id: int, event_update: EventUpdate):
-    """
-    Updates an event's base fields (name, event_type_id, place_id, dates).
-    Only provided fields will be updated.
-    """
-    cnx = None
-    cursor = None
-    try:
-        cnx = db_pool.get_connection()
-        cursor = cnx.cursor(dictionary=True)
-        
-        # Check if event exists
-        cursor.execute("SELECT id, Name, EventTypeID, PlaceID, StartDateTime, EndDateTime FROM Event WHERE id = %s;", (event_id,))
-        event = cursor.fetchone()
-        if not event:
-            raise HTTPException(status_code=404, detail="Event not found")
-        
-        # Build update query dynamically based on provided fields
-        updates = []
-        params = []
-        
-        if event_update.name is not None:
-            updates.append("name = %s")
-            params.append(event_update.name)
-        
-        if event_update.event_type_id is not None:
-            # Validate event type exists
-            cursor.execute("SELECT id FROM EventType WHERE id = %s;", (event_update.event_type_id,))
-            if not cursor.fetchone():
-                raise HTTPException(status_code=404, detail="Event type not found")
-            updates.append("eventTypeID = %s")
-            params.append(event_update.event_type_id)
-        
-        if event_update.place_id is not None:
-            # Validate place exists
-            cursor.execute("SELECT id FROM Place WHERE id = %s;", (event_update.place_id,))
-            if not cursor.fetchone():
-                raise HTTPException(status_code=404, detail="Place not found")
-            updates.append("placeID = %s")
-            params.append(event_update.place_id)
-        
-        if event_update.start_date_time is not None:
-            updates.append("startDateTime = %s")
-            params.append(event_update.start_date_time)
-        
-        if event_update.end_date_time is not None:
-            updates.append("endDateTime = %s")
-            params.append(event_update.end_date_time)
-        
-        if not updates:
-            return {"message": "No fields to update", "event_id": event_id}
-        
-        # Add event_id for WHERE clause
-        params.append(event_id)
-        
-        # Execute update
-        update_query = f"UPDATE Event SET {', '.join(updates)} WHERE id = %s;"
-        cursor.execute(update_query, params)
-        cnx.commit()
-        
-        return {
-            "message": "Event updated successfully",
-            "event_id": event_id,
-            "updated_fields": [u.split(' = ')[0] for u in updates]
-        }
-        
-    except HTTPException:
-        raise
-    except mysql.connector.Error as err:
-        if cnx:
-            cnx.rollback()
-        raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
-    finally:
-        if cursor:
-            cursor.close()
-        if cnx and cnx.is_connected():
-            cnx.close()
 
 
 # ========== REDIS CHECK-IN ENDPOINTS ==========
@@ -1919,24 +1982,33 @@ def get_check_in_count(event_id: int):
     Gets the current count of students checked in to an event from Redis.
     """
     # --- VALIDATE EVENT EXISTS ---
+    cnx = None
+    cursor = None
     try:
         cnx = db_pool.get_connection()
         cursor = cnx.cursor(dictionary=True)
+
         cursor.execute("SELECT ID, Name FROM Event WHERE ID = %s;", (event_id,))
         event = cursor.fetchone()
         if not event:
             raise HTTPException(status_code=404, detail="Event not found")
-        cursor.close()
-        cnx.close()
+
     except HTTPException:
         raise
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"MySQL error: {err}")
     finally:
-        if cursor:
-            cursor.close()
-        if cnx and cnx.is_connected():
-            cnx.close()
+        # Cleanup safely (no is_connected())
+        try:
+            if cursor is not None:
+                cursor.close()
+        except:
+            pass
+        try:
+            if cnx is not None:
+                cnx.close()
+        except:
+            pass
 
     # --- GET COUNT FROM REDIS ---
     if redisClient is None:
