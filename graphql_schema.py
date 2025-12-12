@@ -1,3 +1,8 @@
+# Westmont College CS 125 Database Design Fall 2025
+# Final Project
+# Assistant Professor Mike Ryu
+# Caleb Song & David Oyebade
+
 """
 GraphQL Schema for Youth Group Management System API
 
