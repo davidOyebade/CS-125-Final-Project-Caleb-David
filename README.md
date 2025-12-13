@@ -114,7 +114,7 @@ sudo service start mysql
    - Copy your password and store it in your `env` file and name it `redis_password` (exclude quotation marks when you store in env).
 7. Run `redis_implement.py`.
 
-### Running the API Manually
+### Running the API
 
 1. Run the following installs for required packages using the command:
    ```bash
@@ -139,9 +139,9 @@ sudo service start mysql
 6. Use the endpoints to execute queries! See the `InsomniaSS.png` for an example.
 
 
-### Running the API Using Docker
+### Setting up Docker
 Note: These instructions require you to have docker desktop installed.
-1. Login into docker using the following command.
+1. Login into Docker using the following command.
     ```bash
    docker login
    ```
@@ -167,12 +167,12 @@ Note: These instructions require you to have docker desktop installed.
     ```bash
    docker pull calebsong/cs125_final_project:mytag
    ```
-5. Build your docker package.
+5. Build your Docker package.
     ```bash
    docker build -t calebsong/cs125_final_project:latest .
 
    ```
-6. Run your docker package. Change the port number and name as desired.
+6. Run your Docker package. Change the port number and name as desired.
     ```bash
    docker run -d   --name api   --network network_name   -p 8000:8000   calebsong/cs125_final_project:latest
    ```
