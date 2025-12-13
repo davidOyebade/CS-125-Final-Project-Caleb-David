@@ -64,6 +64,7 @@ Pastors/Youth leaders
 
 1. **MySQL 9.5**
 2. **Python 3.10**
+3. **Docker Desktop**
 
 Use the following command to start MySQL on Ubuntu:
 ```bash
@@ -108,7 +109,7 @@ sudo service start mysql
    - Copy your password and store it in your `env` file and name it `redis_password` (exclude quotation marks when you store in env).
 7. Run `redis_implement.py`.
 
-### Running the API
+### Running the API Manually
 
 1. Run the following installs for required packages using the command:
    ```bash
@@ -132,8 +133,45 @@ sudo service start mysql
 
 6. Use the endpoints to execute queries! See the `InsomniaSS.png` for an example.
 
----
 
+### Running the API Using Docker
+Note: These instructions require you to have docker desktop installed.
+1. Login into docker using the following command.
+    ```bash
+   docker login
+   ```
+2. Create and name a network for your app and MySQL to run on. 
+    ```bash
+   docker network create network_name
+   ```
+3. Run the following command to run MySQL on your created network. Use the port corresponding with the MySQL host that has the MySQL data inserts.
+    ```bash
+    docker run -d --name mysql \
+    --network network_name \
+    -p 3309:3306 \
+    -e MYSQL_ROOT_PASSWORD=secret \
+    -e MYSQL_DATABASE=FP_YG_app \
+    mysql:8
+     ```
+4. Insert data SQL files into the FP_YG_app database.
+    ```bash
+    docker exec -i mysql mysql -uroot -psecret FP_YG_app < schema.sql
+    docker exec -i mysql mysql -uroot -psecret FP_YG_app < data.sql
+    ```
+5. Pull the Docker image off of Dockerhub.
+    ```bash
+   docker pull calebsong/cs125_final_project:mytag
+   ```
+5. Build your docker package.
+    ```bash
+   docker build -t calebsong/cs125_final_project:latest .
+
+   ```
+6. Run your docker package. Change the port number and name as desired.
+    ```bash
+   docker run -d   --name api   --network network_name   -p 8000:8000   calebsong/cs125_final_project:latest
+   ```
+7. View the api using the url provided on the Docker desktop app! Endpoints and queries work exactly the same way as before.
 ## Important Notes
 
 ⚠️ **ALL DATA IS GENERATED AND NOT REAL. ALL PASSWORDS IN THE REPOSITORY ARE OUT OF DATE AND NO LONGER VALID.**
