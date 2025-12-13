@@ -75,16 +75,21 @@ sudo service start mysql
 
 1. **MongoDB**
 2. **Redis**
+3. **MySQL**
+
+### Setting up your env file
+1. Create a .env file in your working directory that you will use to store secrets
+2. Add that .env file to your gitignore so that git does not track your secrets
 
 ### Creating Your Database
 
-1. Run both the `yg_create_tables.sql` and `yg_data_insert.sql` files in order.
-2. Add the `FP_YG_app` database to MySQL using the following commands in Ubuntu:
+1. Add your MySQL root password to your .env file saved as `DB_PASS`
+2. Run both the `yg_create_tables.sql` and `yg_data_insert.sql` files in order.
+3. Add the `FP_YG_app` database to MySQL using the following commands in Ubuntu:
    ```bash
    mysql -u root -p FP_YG_app < yg_create_tables.sql
    mysql -u root -p FP_YG_app < yg_data_insert.sql
    ```
-
 ### Initializing MongoDB and Redis
 
 #### 1. MongoDB
