@@ -177,6 +177,15 @@ Note: These instructions require you to have docker desktop installed.
    docker run -d   --name api   --network network_name   -p 8000:8000   calebsong/cs125_final_project:latest
    ```
 7. View the api using the url provided on the Docker desktop app! Endpoints and queries work exactly the same way as before.
+### Using the Frontend
+The frontend for this app is fairly straight forward. There is a dashboard, showing total events, people, small groups, and active check ins, as well as recent events with their
+check in status.  There is an events tab with a calendar and list view, along with a function add a new event if desired. The people tab lists all the people with the option to view details,
+and has a search function that finds people by name. 
+
+The small group table lists all the small groups in the youth group database, and allows for roster viewing and editing. The event type tables is a way for the user to see what event categories there are,
+and gives the user the ability to create a brand-new event type. Then, there is a check-in tab, that prompts the user to select a event and then check a student who is registered of the event in or out depnding 
+on that students check-in status. Finally, there is a GraphQL, which has sample queries built in and allows for complex searches.
+
 ## Important Notes
 
 ⚠️ **ALL DATA IS GENERATED AND NOT REAL. ALL PASSWORDS IN THE REPOSITORY ARE OUT OF DATE AND NO LONGER VALID.**
